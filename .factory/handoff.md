@@ -1,27 +1,28 @@
-# ICS Intake Checker — Polish 4 handoff
+# ICS Intake Checker — review 5 handoff
 
 ## Completed
 
-- Closed F-4-1 with an `event-preview` claim and one tagged two-event upload test. It proves that every uploaded event title and start date appears in **Event preview**.
-- Revalidated every finding in `.factory/review-1.md` through `.factory/review-4.md`; all are closed with no regression.
-- Updated the catalog description to a verb-first 76-character sentence.
-- Preserved the luminous glass inspection-table visual system and static offline-PWA deployment class.
-
-## Repair and deployment
-
-- Repair commit: `be8d1bbc198b2f64d6b28f119c514136836c04eb` (`fix: prove calendar event previews`), pushed to `origin/main`.
-- Deployed through `/opt/fleet/lib/deploy-static.sh ics-intake-checker dist`.
-- Static Web Apps deployment: `d5a418c9-d553-403f-8a14-11615b3405e2`.
-- Live URL: https://ics-intake-checker.sociobot.in
+- Performed the fifth adversarial review of the deployed product at 390 px and desktop from fresh browser contexts.
+- Re-ran the landing/README copy audit, one-click demo, live storage isolation, request-origin privacy, offline reload, route metadata, link crawl, 404, focus, accessibility, and visual-identity checks.
+- Read and independently rechecked every finding in reviews 1–4 and polish reports 1–4. All earlier findings remain fixed.
+- Wrote `.factory/review-5.md`. Verdict: **FAIL** with one minor finding, F-5-1. No blocking finding was found.
+- No product code was modified.
 
 ## Verification
 
-- Fresh clone `/tmp/ics-polish4-clean-w1jVXc`: `npm ci`, all 11 `.factory/claims.json` commands run separately, and `npm run build` passed.
-- Local: `npm test` passed 30/30 in desktop and 390 px Chromium; `npm run build` passed and produced `dist/index.html` (11.23 KB gzip JS, 4.46 KB gzip CSS).
-- Local cold check: `.factory/evidence/polish-4-local/verify.json` reports title, `lang=en`, one H1, main landmark, image alts, named buttons, and zero console errors.
-- Live cold check: `.factory/evidence/polish-4-live/verify.json` reports the same with an 819 ms load. Live browser checks then passed seeded demo reset/isolation and five exits, `?demo=1`, event preview, mobile targets/no overflow, route title/metadata/status 404, privacy request origins, offline reload, and Axe with zero serious/critical violations on `/`, `/demo`, `/privacy`, `/terms`, and 404.
-- Live Lighthouse mobile: Performance 100, Accessibility 100, Best Practices 100, SEO 100; LCP 1,153 ms and CLS 0. See `.factory/evidence/polish-4-live/lighthouse.json`.
+- Fresh clone `/tmp/ics-review5-clean-hbcNMR`: `npm ci` and every one of the 11 commands in `.factory/claims.json` passed separately in desktop and mobile Chromium.
+- Current tree: `npm test` passed 30/30; `npm run build` passed and produced `dist/`.
+- Build output: JS 31.82 KB raw / 11.23 KB gzip; CSS 15.58 KB raw / 4.46 KB gzip.
+- Live root verifier: `/opt/fleet/lib/verify-url.sh` passed; temporary report directory `/tmp/ics-review5-verify-T5OL6S`.
+- Live Axe scans: zero serious/critical findings on root, demo, privacy, terms, and 404.
+- Live demo: a seeded real IndexedDB record stayed byte-identical through demo mutation, reset, reload, and exit. A direct demo context created no IndexedDB database and had empty local/session storage.
+- Live network: valid routes and the complete demo flow made same-origin requests only; the sample reloaded offline after its first visit.
 
-## Known gaps
+## Open finding
 
-None.
+- **F-5-1:** The landing paste flow and intake errors promise an exact 5 MB limit, but `.factory/claims.json` has no size-limit claim and no tagged boundary test. Add one claim/test covering 5,000,000 and 5,000,001 bytes for chosen-file and paste paths, or remove the number. Also reconcile the parser's unreachable “more than 5 MB” warning.
+
+## Handoff state
+
+- Review commit should contain only `.factory/review-5.md` and this handoff update.
+- Product code remains buildable and unchanged.
