@@ -157,10 +157,10 @@ export function inspectIcs(source: string): Inspection {
   }
   const allProps = lines.map(parseProperty).filter((item): item is IcsProperty => Boolean(item));
   const version = allProps.find((item) => item.name === 'VERSION');
-  if (!version || version.value !== '2.0') findings.push({ id: 'version', severity: 'warning', title: 'Calendar version 2.0 is missing', detail: 'Some calendar apps may reject this file. Ask the sender for an ICS 2.0 file.' });
+  if (!version || version.value !== '2.0') findings.push({ id: 'version', severity: 'warning', title: 'Calendar version 2.0 is missing', detail: 'This file has no VERSION:2.0 line. Ask the sender for an ICS 2.0 file.' });
   const method = allProps.find((item) => item.name === 'METHOD')?.value.toUpperCase() || '';
-  if (method === 'CANCEL') findings.push({ id: 'cancel-method', severity: 'warning', title: 'This file cancels events', detail: 'Importing it may remove or cancel a matching event. Check the event status first.' });
-  else if (method === 'REQUEST' || method === 'REPLY') findings.push({ id: 'invite-method', severity: 'note', title: `This is an invitation (${method})`, detail: 'Import it only if you want to respond through your calendar app.', repair: 'method' });
+  if (method === 'CANCEL') findings.push({ id: 'cancel-method', severity: 'warning', title: 'This file cancels events', detail: 'This file contains METHOD:CANCEL. Check the event status before import.' });
+  else if (method === 'REQUEST' || method === 'REPLY') findings.push({ id: 'invite-method', severity: 'note', title: `This is an invitation (${method})`, detail: `This file contains METHOD:${method}. Remove that line from the downloaded copy if you do not need it.`, repair: 'method' });
   const timezoneIds = allProps.filter((item) => item.name === 'TZID').map((item) => item.value);
   const eventBlocks: IcsProperty[][] = [];
   let current: IcsProperty[] | undefined;
@@ -194,17 +194,17 @@ export function inspectIcs(source: string): Inspection {
   const prints = new Map<string, number>();
   for (const event of events) {
     const n = event.index + 1;
-    if (!event.uid) findings.push({ id: `uid-${n}`, severity: 'warning', title: `Event ${n} has no unique ID`, detail: 'A calendar may import it more than once. Add a generated ID before export.', eventIndex: event.index, repair: 'uids' });
+    if (!event.uid) findings.push({ id: `uid-${n}`, severity: 'warning', title: `Event ${n} has no unique ID`, detail: 'This event has no UID. Add a generated ID to the downloaded copy.', eventIndex: event.index, repair: 'uids' });
     else if (uids.has(event.uid)) findings.push({ id: `duplicate-uid-${n}`, severity: 'error', title: `Event ${n} repeats an event ID`, detail: `It has the same UID as event ${(uids.get(event.uid) || 0) + 1}. Remove one copy or ask the sender to fix it.`, eventIndex: event.index });
     else uids.set(event.uid, event.index);
     if (prints.has(event.fingerprint)) findings.push({ id: `duplicate-content-${n}`, severity: 'warning', title: `Event ${n} looks like a duplicate`, detail: `Its title, time, and location match event ${(prints.get(event.fingerprint) || 0) + 1}.`, eventIndex: event.index });
     else prints.set(event.fingerprint, event.index);
     if (!event.start) findings.push({ id: `start-${n}`, severity: 'error', title: `Event ${n} has no start time`, detail: 'Add DTSTART before importing this event.', eventIndex: event.index });
     else if (event.start.timestamp === undefined) findings.push({ id: `start-format-${n}`, severity: 'error', title: `Event ${n} has an invalid start time`, detail: `Change “${event.start.raw}” to an ICS date or date-time.`, eventIndex: event.index });
-    if (event.start?.kind === 'floating') findings.push({ id: `floating-${n}`, severity: 'warning', title: `Event ${n} has no timezone`, detail: 'It will use the timezone of the calendar that imports it. Confirm the shown local time.', eventIndex: event.index });
+    if (event.start?.kind === 'floating') findings.push({ id: `floating-${n}`, severity: 'warning', title: `Event ${n} has no timezone`, detail: 'The start time has no TZID or UTC Z suffix. Confirm the shown local time before import.', eventIndex: event.index });
     if (event.start?.tzid && !validTimeZone(event.start.tzid) && !timezoneIds.includes(event.start.tzid)) findings.push({ id: `unknown-tz-${n}`, severity: 'error', title: `Event ${n} uses an unknown timezone`, detail: `Add a VTIMEZONE block for “${event.start.tzid}” or replace it with an IANA timezone.`, eventIndex: event.index });
     if (event.start?.timestamp !== undefined && event.end?.timestamp !== undefined && event.end.timestamp <= event.start.timestamp) findings.push({ id: `end-${n}`, severity: 'error', title: `Event ${n} ends before it starts`, detail: 'Correct DTEND so it falls after DTSTART.', eventIndex: event.index });
-    if (!property(event.properties, 'DTSTAMP')) findings.push({ id: `stamp-${n}`, severity: 'note', title: `Event ${n} has no creation stamp`, detail: 'Add a UTC DTSTAMP for better duplicate handling.', eventIndex: event.index, repair: 'stamps' });
+    if (!property(event.properties, 'DTSTAMP')) findings.push({ id: `stamp-${n}`, severity: 'note', title: `Event ${n} has no creation stamp`, detail: 'This event has no DTSTAMP. Add a UTC creation stamp to the downloaded copy.', eventIndex: event.index, repair: 'stamps' });
     if (event.recurrence) {
       const parts = Object.fromEntries(event.recurrence.split(';').map((part) => part.split('=')));
       if (!parts.FREQ || !['DAILY', 'WEEKLY', 'MONTHLY', 'YEARLY'].includes(parts.FREQ)) findings.push({ id: `rrule-${n}`, severity: 'error', title: `Event ${n} has an invalid repeat rule`, detail: 'RRULE needs a supported FREQ value.', eventIndex: event.index });
@@ -213,13 +213,13 @@ export function inspectIcs(source: string): Inspection {
       if (parts.COUNT && (!/^\d+$/.test(parts.COUNT) || +parts.COUNT < 1)) findings.push({ id: `count-${n}`, severity: 'error', title: `Event ${n} has an invalid repeat count`, detail: 'COUNT must be a whole number of 1 or more.', eventIndex: event.index });
       if (parts.UNTIL && formatDate(parts.UNTIL, parts.UNTIL.endsWith('Z') ? 'utc' : 'floating').timestamp === undefined) findings.push({ id: `until-${n}`, severity: 'error', title: `Event ${n} has an invalid repeat end`, detail: 'UNTIL must use an ICS date or date-time.', eventIndex: event.index });
     }
-    if (event.attendees) findings.push({ id: `people-${n}`, severity: 'note', title: `Event ${n} contains ${event.attendees} attendee ${event.attendees === 1 ? 'address' : 'addresses'}`, detail: 'These addresses stay in the exported file unless you remove attendee details.', eventIndex: event.index, repair: 'people' });
-    if (event.alarms) findings.push({ id: `alarms-${n}`, severity: 'note', title: `Event ${n} will add ${event.alarms} ${event.alarms === 1 ? 'alarm' : 'alarms'}`, detail: 'Remove alarms if you do not want notifications after import.', eventIndex: event.index, repair: 'alarms' });
-    if (event.status.toUpperCase() === 'CANCELLED') findings.push({ id: `status-${n}`, severity: 'warning', title: `Event ${n} is cancelled`, detail: 'Importing it may cancel a matching event in your calendar.', eventIndex: event.index });
+    if (event.attendees) findings.push({ id: `people-${n}`, severity: 'note', title: `Event ${n} contains ${event.attendees} attendee ${event.attendees === 1 ? 'address' : 'addresses'}`, detail: 'These addresses stay in the downloaded copy unless you remove attendee details.', eventIndex: event.index, repair: 'people' });
+    if (event.alarms) findings.push({ id: `alarms-${n}`, severity: 'note', title: `Event ${n} contains ${event.alarms} ${event.alarms === 1 ? 'alarm' : 'alarms'}`, detail: 'Remove the alarm block from the downloaded copy if you do not need it.', eventIndex: event.index, repair: 'alarms' });
+    if (event.status.toUpperCase() === 'CANCELLED') findings.push({ id: `status-${n}`, severity: 'warning', title: `Event ${n} is cancelled`, detail: 'This event contains STATUS:CANCELLED. Check it before import.', eventIndex: event.index });
     const urls = event.properties.filter((item) => item.name === 'URL' || item.name === 'ATTACH');
     if (urls.length) findings.push({ id: `links-${n}`, severity: 'note', title: `Event ${n} contains ${urls.length} external ${urls.length === 1 ? 'link' : 'links'}`, detail: 'Links are shown as text only. This checker never opens them.', eventIndex: event.index });
   }
-  if (endings !== 'CRLF') findings.push({ id: 'line-endings', severity: 'note', title: 'Line endings are not the ICS standard', detail: 'Normalize them to improve compatibility with older calendar apps.', repair: 'lineEndings' });
+  if (endings !== 'CRLF') findings.push({ id: 'line-endings', severity: 'note', title: 'Line endings are not the ICS standard', detail: 'Write CRLF line breaks in the downloaded copy.', repair: 'lineEndings' });
   const errors = findings.filter((finding) => finding.severity === 'error').length;
   if (!errors && events.length) findings.push({ id: 'parse-pass', severity: 'pass', title: 'The calendar structure can be exported', detail: 'Review warnings and event details before choosing a calendar.' });
   return { source, events, findings, calendarName: unescapeText(allProps.find((item) => item.name === 'X-WR-CALNAME')?.value || ''), method, timezones: timezoneIds, lineEnding: endings, canExport: errors === 0 && events.length > 0 };

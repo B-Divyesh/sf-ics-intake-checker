@@ -1,17 +1,17 @@
 [
   {
     "id": "sample-preflight",
-    "claim": "The sample shows timezone, repeat, attendee, alarm, link, and duplicate risks in one click.",
+    "claim": "One click opens three sample events with invitation, timezone, repeat, attendee, alarm, link, and duplicate findings.",
     "where": "landing action and demo",
     "test": "npm test -- --grep @claim:sample-preflight",
-    "sandbox": "fresh browser context at /; click the sample action and assert all six listed finding families"
+    "sandbox": "fresh browser context at /; click the sample action and assert all seven listed finding families"
   },
   {
     "id": "demo-isolation",
     "claim": "Demo uses sample data and does not change a saved real file.",
     "where": "demo banner, Privacy, README",
     "test": "npm test -- --grep @claim:demo-isolation",
-    "sandbox": "seed a real IndexedDB record; exercise reload, reset, and exit in /demo; byte-compare the record after reload"
+    "sandbox": "seed a real IndexedDB record; exercise reset, reload, Return, wordmark, Back, Privacy, and Terms exits; byte-compare before and after every resulting Forget action"
   },
   {
     "id": "local-only",
@@ -22,7 +22,7 @@
   },
   {
     "id": "repair-export",
-    "claim": "Selected fixes change only a downloaded copy: they add missing IDs and UTC stamps, remove people, alarms, and invitation mode, or write CRLF lines.",
+    "claim": "Selected fixes change only a downloaded copy: they add missing IDs and UTC stamps, remove people, alarms, and invitation mode, or write CRLF lines. People and alarm blocks stay unless selected.",
     "where": "landing facts, repair deck, boundaries, Terms, README",
     "test": "npm test -- --grep @claim:repair-export",
     "sandbox": "save a real fixture; apply every repair; inspect each named output change and CRLF lines; byte-compare IndexedDB plus reloaded raw source"

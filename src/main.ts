@@ -2,6 +2,7 @@ import './style.css';
 import { inspectIcs, repairIcs, SAMPLE_ICS, type Inspection, type RepairOptions, type Severity } from './ics';
 
 type Destination = 'apple' | 'google' | 'outlook';
+type FocusTarget = 'heading' | string;
 
 interface AppState {
   inspection?: Inspection;
@@ -15,6 +16,7 @@ interface AppState {
 const initialRepairs: RepairOptions = { uids: false, stamps: false, alarms: false, people: false, method: false, lineEndings: false };
 const state: AppState = { fileName: '', demo: false, destination: 'apple', repairs: { ...initialRepairs }, pasteOpen: false };
 const app = document.querySelector<HTMLDivElement>('#app')!;
+let routeTransition = 0;
 const live = document.createElement('div');
 live.className = 'sr-only';
 live.setAttribute('aria-live', 'polite');
@@ -35,7 +37,7 @@ function shell(content: string): string {
     <nav aria-label="Main navigation">${navLink('/demo', 'Demo')}${navLink('/privacy', 'Privacy')}</nav>
   </header>
   ${content}
-  <footer><div><strong>ICS Intake Checker</strong><p>Check and repair an ICS file before calendar import.</p></div><nav aria-label="Footer navigation">${navLink('/privacy', 'Privacy')}${navLink('/terms', 'Terms')}<a href="https://hello-factory.sociobot.in" rel="external">Built by Param Factory</a></nav><p class="build-id">v1.1 · build 2026.08</p><p class="art-credit">Original generated illustration.</p></footer>`;
+  <footer><div><strong>ICS Intake Checker</strong><p>Check and fix an ICS file before calendar import.</p></div><nav aria-label="Footer navigation">${navLink('/privacy', 'Privacy')}${navLink('/terms', 'Terms')}<a href="https://hello-factory.sociobot.in" rel="external">Built by Param Factory (external site)</a></nav><p class="build-id">v1.2 · build 2026.08</p><p class="art-credit">Original generated illustration.</p></footer>`;
 }
 
 function pageTitle(name: string, description: string): void {
@@ -59,7 +61,7 @@ const severityLabel: Record<Severity, string> = { error: 'Stops export', warning
 function toolMarkup(): string {
   if (!state.inspection) {
     return `<section class="intake" id="checker" aria-labelledby="checker-title">
-      <div class="section-kicker">Check your file privately</div><h2 id="checker-title">Open a calendar file here</h2>
+      <div class="section-kicker">Check your file privately</div><h2 id="checker-title" tabindex="-1">Open a calendar file here</h2>
       <label class="drop-zone" for="ics-file"><span class="drop-symbol" aria-hidden="true">↧</span><strong>Drop an .ics file</strong><span>or choose one from this device</span><input id="ics-file" type="file" accept=".ics,text/calendar" /></label>
       <p class="intake-note">The checker reads the file in this browser. It never opens embedded links.</p>
       <button class="paste-toggle" type="button" data-action="toggle-paste" aria-expanded="${state.pasteOpen}" aria-controls="paste-form">Paste ICS text</button>
@@ -94,8 +96,8 @@ function toolMarkup(): string {
         ${data.events.map((event) => `<li><article class="event-card"><div class="event-index" aria-hidden="true">${String(event.index + 1).padStart(2, '0')}</div><div><h4>${escapeHtml(event.summary)}</h4><p class="event-date">${dateMarkup(event)}</p>${event.location ? `<p><span class="data-label">Place</span>${escapeHtml(event.location)}</p>` : ''}${event.recurrence ? `<p><span class="data-label">Repeats</span>${escapeHtml(event.recurrence.replace(/;/g, ' · '))}</p>` : ''}${event.description ? `<details><summary>Show description</summary><p>${escapeHtml(event.description)}</p></details>` : ''}</div></article></li>`).join('')}
       </ol></div>
     </div>
-    <section class="repair-deck" aria-labelledby="repair-title"><div><span class="section-kicker">Optional cleanup</span><h3 id="repair-title">Prepare a safer copy</h3><p>Changes apply only to the downloaded copy. Your original file stays unchanged.</p></div>
-      <fieldset><legend class="sr-only">Repairs to apply</legend>${repairRows.filter(([key]) => repairKinds.has(key)).map(([key, label, help]) => `<label class="repair-row"><input type="checkbox" data-repair="${key}" ${state.repairs[key] ? 'checked' : ''}/><span><strong>${label}</strong><small>${help}</small></span></label>`).join('') || '<p>No automatic cleanup applies to this file.</p>'}</fieldset>
+    <section class="repair-deck" aria-labelledby="repair-title"><div><span class="section-kicker">Optional fixes</span><h3 id="repair-title">Choose fixes for a checked copy</h3><p>Changes apply only to the downloaded copy. Your original file stays unchanged.</p></div>
+      <fieldset><legend class="sr-only">Fixes to apply</legend>${repairRows.filter(([key]) => repairKinds.has(key)).map(([key, label, help]) => `<label class="repair-row"><input type="checkbox" data-repair="${key}" ${state.repairs[key] ? 'checked' : ''}/><span><strong>${label}</strong><small>${help}</small></span></label>`).join('') || '<p>No optional fixes apply to this file.</p>'}</fieldset>
     </section>
     <section class="export-deck" aria-labelledby="export-title"><div><span class="section-kicker">Choose a calendar app</span><h3 id="export-title">Download a checked copy</h3></div>
       <label for="destination">Calendar app</label><select id="destination"><option value="apple" ${state.destination === 'apple' ? 'selected' : ''}>Apple Calendar</option><option value="google" ${state.destination === 'google' ? 'selected' : ''}>Google Calendar</option><option value="outlook" ${state.destination === 'outlook' ? 'selected' : ''}>Outlook</option></select>
@@ -114,20 +116,20 @@ function destinationHelp(): string {
 }
 
 function landing(): string {
-  pageTitle('ICS Intake Checker — Check files before import', 'Preview, check, repair, and export an ICS calendar file before you import it. Your event details stay in your browser.');
+  pageTitle('ICS Intake Checker — Check files before import', 'Preview, check, fix, and export an ICS calendar file before you import it. Your event details stay in your browser.');
   return shell(`<main id="main">
     <section class="hero" aria-labelledby="page-title"><div class="hero-copy"><span class="eyebrow">Check a calendar file</span><h1 id="page-title" tabindex="-1">Check an ICS file before calendar import</h1><p class="lede">For people who receive calendar files and want to check risks before importing them.</p><div class="hero-action"><a class="primary-button" href="/demo" data-route>Try it with sample data</a><span>See timezones, repeats, people, alarms, links, and duplicate risks.</span></div><ul class="plain-facts"><li>Event details stay in this browser.</li><li>Works offline after the first visit.</li><li>Changes apply only to a downloaded copy.</li></ul></div>
       <figure class="hero-art"><picture><source srcset="/assets/inspection-landscape.webp" type="image/webp"/><img src="/assets/inspection-landscape.jpg" width="768" height="512" alt="A glass calendar file passes over a lit inspection table before import." fetchpriority="high" decoding="async"/></picture><figcaption>Inspect the file. Download only a copy you trust.</figcaption></figure>
     </section>
     ${toolMarkup()}
-    <section class="how" aria-labelledby="how-title"><div><span class="section-kicker">Three steps</span><h2 id="how-title">How the checker works</h2></div><ol><li><b>1</b><h3>Open the file</h3><p>Drop a calendar file, choose one, or paste its text.</p></li><li><b>2</b><h3>Read each finding</h3><p>Check times, repeats, people, alarms, links, and duplicates.</p></li><li><b>3</b><h3>Export a copy</h3><p>Apply optional cleanup and download for your calendar app.</p></li></ol></section>
+    <section class="how" aria-labelledby="how-title"><div><span class="section-kicker">Three steps</span><h2 id="how-title">How the checker works</h2></div><ol><li><b>1</b><h3>Open the file</h3><p>Drop a calendar file, choose one, or paste its text.</p></li><li><b>2</b><h3>Read each finding</h3><p>Check times, repeats, people, alarms, links, and duplicates.</p></li><li><b>3</b><h3>Export a copy</h3><p>Apply optional fixes and download for your calendar app.</p></li></ol></section>
     <section class="boundaries" aria-labelledby="boundaries-title"><div><span class="section-kicker">What the checker cannot do</span><h2 id="boundaries-title">You choose what happens next</h2></div><div><p>The checker prepares a checked copy. You decide whether to import it.</p><p>It shows embedded links as text. It does not open them.</p></div></section>
   </main>`);
 }
 
 function demoPage(): string {
-  pageTitle('Demo — ICS Intake Checker', 'Try ICS Intake Checker with a sample clinic and vendor calendar file.');
-  return shell(`<main id="main"><section class="demo-heading"><span class="eyebrow">Sample inspection</span><h1 id="page-title" tabindex="-1">Inspect a sample calendar file</h1><p>The sample contains invitation details, attendee addresses, an alarm, a repeat rule, and a floating time.</p></section>${toolMarkup()}</main>`);
+  pageTitle('Demo — ICS Intake Checker', 'Try ICS Intake Checker with a sample calendar file and its findings.');
+  return shell(`<main id="main"><section class="demo-heading"><span class="eyebrow">Sample inspection</span><h1 id="page-title" tabindex="-1">Inspect a sample calendar file</h1><p>The sample shows invitation, timezone, repeat, attendee, alarm, link, and duplicate findings.</p></section>${toolMarkup()}</main>`);
 }
 
 function infoPage(kind: 'privacy' | 'terms'): string {
@@ -159,17 +161,21 @@ async function db(action: 'get' | 'set' | 'clear', value?: { source: string; nam
   });
 }
 
-function render(focus = false): void {
-  const path = window.location.pathname.replace(/\/$/, '') || '/';
-  state.demo = path === '/demo';
-  app.innerHTML = path === '/' ? landing() : path === '/demo' ? demoPage() : path === '/privacy' ? infoPage('privacy') : path === '/terms' ? infoPage('terms') : notFound();
-  bind();
-  if (focus) {
-    const title = document.querySelector<HTMLElement>('h1');
-    title?.focus();
-    live.textContent = title?.textContent || 'Page changed';
+function focusRendered(target?: FocusTarget): void {
+  if (!target) return;
+  const element = target === 'heading' ? document.querySelector<HTMLElement>('h1') : document.querySelector<HTMLElement>(target);
+  element?.focus();
+  if (target === 'heading') {
+    live.textContent = element?.textContent || 'Page changed';
     window.scrollTo({ top: 0, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
   }
+}
+
+function render(focusTarget?: FocusTarget): void {
+  const path = window.location.pathname.replace(/\/$/, '') || '/';
+  app.innerHTML = path === '/' ? landing() : path === '/demo' ? demoPage() : path === '/privacy' ? infoPage('privacy') : path === '/terms' ? infoPage('terms') : notFound();
+  bind();
+  focusRendered(focusTarget);
 }
 
 function parseSource(source: string, name: string, persist = true): void {
@@ -199,25 +205,61 @@ function readPastedSource(source: string): void {
   parseSource(source, 'pasted-calendar.ics');
 }
 
-function loadDemo(): void {
+function loadDemo(focusTarget?: FocusTarget): void {
   state.demo = true;
   state.destination = 'apple';
+  state.repairs = { ...initialRepairs };
   state.pasteOpen = false;
-  parseSource(SAMPLE_ICS, 'sample-clinic-and-vendor.ics', false);
+  state.inspection = inspectIcs(SAMPLE_ICS);
+  state.fileName = 'sample-clinic-and-vendor.ics';
+  render(focusTarget);
 }
 
-async function returnToRealFile(): Promise<void> {
+function useRealFile(saved?: { source: string; name: string }): boolean {
   state.demo = false;
   state.destination = 'apple';
   state.repairs = { ...initialRepairs };
   state.pasteOpen = false;
   state.inspection = undefined;
   state.fileName = '';
-  history.pushState({}, '', '/');
-  const saved = await db('get');
   if (saved) { state.inspection = inspectIcs(saved.source); state.fileName = saved.name; }
-  render(true);
-  live.textContent = saved ? 'Returned to your saved file.' : 'Returned to your file workspace.';
+  return Boolean(saved);
+}
+
+async function navigate(path: string, historyMode: 'push' | 'replace' | 'none' = 'push'): Promise<boolean> {
+  const transition = ++routeTransition;
+  const destination = path.replace(/\/$/, '') || '/';
+  if (historyMode === 'push') history.pushState({}, '', destination);
+  if (historyMode === 'replace') history.replaceState({}, '', destination);
+  if (destination === '/demo') {
+    loadDemo('heading');
+    live.textContent = 'Sample calendar file loaded.';
+    return false;
+  }
+  if (state.demo) {
+    const saved = await db('get');
+    if (transition !== routeTransition) return false;
+    const restored = useRealFile(saved);
+    render('heading');
+    return restored;
+  }
+  render('heading');
+  return Boolean(state.inspection);
+}
+
+async function returnToRealFile(): Promise<void> {
+  const restored = await navigate('/', 'push');
+  live.textContent = restored ? 'Returned to your saved file.' : 'Returned to your file workspace.';
+}
+
+async function forgetRealFile(): Promise<void> {
+  state.inspection = undefined;
+  state.fileName = '';
+  state.repairs = { ...initialRepairs };
+  state.pasteOpen = false;
+  await db('clear');
+  render('#checker-title');
+  live.textContent = 'The saved file was forgotten.';
 }
 
 function download(): void {
@@ -234,28 +276,27 @@ function download(): void {
 }
 
 function bind(): void {
-  document.querySelectorAll<HTMLAnchorElement>('[data-route]').forEach((link) => link.addEventListener('click', (event) => { event.preventDefault(); history.pushState({}, '', link.pathname); if (link.pathname === '/demo') loadDemo(); else render(true); }));
+  document.querySelectorAll<HTMLAnchorElement>('[data-route]').forEach((link) => link.addEventListener('click', (event) => { event.preventDefault(); void navigate(link.pathname); }));
   document.querySelector<HTMLInputElement>('#ics-file')?.addEventListener('change', (event) => void readFile((event.target as HTMLInputElement).files?.[0]));
   const drop = document.querySelector<HTMLElement>('.drop-zone');
   drop?.addEventListener('dragover', (event) => { event.preventDefault(); drop.classList.add('is-dragging'); });
   drop?.addEventListener('dragleave', () => drop.classList.remove('is-dragging'));
   drop?.addEventListener('drop', (event) => { event.preventDefault(); drop.classList.remove('is-dragging'); void readFile(event.dataTransfer?.files[0]); });
   document.querySelector('[data-action="clear"]')?.addEventListener('click', () => {
-    if (state.demo) { loadDemo(); live.textContent = 'The sample file was reloaded.'; return; }
-    state.inspection = undefined; state.fileName = ''; void db('clear'); render(); live.textContent = 'The saved file was forgotten.';
+    if (state.demo) { loadDemo('[data-action="clear"]'); live.textContent = 'The sample file was reloaded.'; return; }
+    void forgetRealFile();
   });
   document.querySelector('[data-action="export"]')?.addEventListener('click', download);
-  document.querySelector('[data-action="reset-demo"]')?.addEventListener('click', () => { loadDemo(); live.textContent = 'The sample was reset.'; });
+  document.querySelector('[data-action="reset-demo"]')?.addEventListener('click', () => { loadDemo('[data-action="reset-demo"]'); live.textContent = 'The sample was reset.'; });
   document.querySelector('[data-action="start-real"]')?.addEventListener('click', () => void returnToRealFile());
-  document.querySelector('[data-action="toggle-paste"]')?.addEventListener('click', () => { state.pasteOpen = !state.pasteOpen; render(); document.querySelector<HTMLTextAreaElement>('#ics-text')?.focus(); });
+  document.querySelector('[data-action="toggle-paste"]')?.addEventListener('click', () => { state.pasteOpen = !state.pasteOpen; render(state.pasteOpen ? '#ics-text' : '[data-action="toggle-paste"]'); });
   document.querySelector<HTMLFormElement>('#paste-form')?.addEventListener('submit', (event) => { event.preventDefault(); readPastedSource(document.querySelector<HTMLTextAreaElement>('#ics-text')?.value || ''); });
   document.querySelector<HTMLSelectElement>('#destination')?.addEventListener('change', (event) => { state.destination = (event.target as HTMLSelectElement).value as Destination; render(); document.querySelector<HTMLSelectElement>('#destination')?.focus(); });
   document.querySelectorAll<HTMLInputElement>('[data-repair]').forEach((input) => input.addEventListener('change', () => { state.repairs[input.dataset.repair as keyof RepairOptions] = input.checked; }));
 }
 
 window.addEventListener('popstate', () => {
-  if (window.location.pathname === '/demo') loadDemo();
-  else render(true);
+  void navigate(window.location.pathname, 'none');
 });
 
 if ('serviceWorker' in navigator) {
@@ -293,10 +334,8 @@ async function start(): Promise<void> {
     loadDemo();
     return;
   }
-  if (window.location.pathname === '/') {
-    const saved = await db('get');
-    if (saved) { state.inspection = inspectIcs(saved.source); state.fileName = saved.name; }
-  }
+  const saved = await db('get');
+  if (saved) { state.inspection = inspectIcs(saved.source); state.fileName = saved.name; }
   render();
 }
 

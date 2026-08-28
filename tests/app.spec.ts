@@ -1,5 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import { readFileSync } from 'node:fs';
 
 const cleanIcs = `BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Fixture//EN\r\nBEGIN:VEVENT\r\nUID:clean-1@example.test\r\nDTSTAMP:20260820T090000Z\r\nSUMMARY:Library orientation\r\nDTSTART:20260907T090000Z\r\nDTEND:20260907T100000Z\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n`;
 
@@ -44,21 +45,47 @@ test('landing, metadata, and legal routes have a usable accessible skeleton', as
   }
 });
 
-test('@claim:sample-preflight sample exposes timezone, repeat, attendee, alarm, link, and duplicate risks in one click', async ({ page }) => {
+test('claims inventory gives every declared claim exactly one tagged browser test', () => {
+  const claims = JSON.parse(readFileSync('.factory/claims.json', 'utf8')) as Array<{ id: string; test: string }>;
+  const source = readFileSync('tests/app.spec.ts', 'utf8');
+  expect(new Set(claims.map((claim) => claim.id)).size).toBe(claims.length);
+  for (const claim of claims) {
+    expect(source.match(new RegExp(`@claim:${claim.id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`, 'g')) || []).toHaveLength(1);
+    expect(claim.test).toContain(`@claim:${claim.id}`);
+  }
+});
+
+test('@claim:sample-preflight one click opens three sample events with invitation, timezone, repeat, attendee, alarm, link, and duplicate findings', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('link', { name: 'Try it with sample data' }).click();
   await expect(page).toHaveURL(/\/demo$/);
   await expect(page.getByText('Demo — sample data, nothing is saved')).toBeVisible();
-  for (const text of ['Event 1 has no timezone', 'Event 1 repeats without an end', 'Event 1 contains 2 attendee addresses', 'Event 1 will add 1 alarm', 'Event 1 contains 1 external link', 'Event 3 looks like a duplicate']) await expect(page.getByText(text)).toBeVisible();
+  await expect(page.locator('.score-strip')).toContainText('3 events');
+  await expect(page.getByRole('heading', { name: 'Follow-up appointment' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Vendor onboarding workshop' })).toHaveCount(2);
+  for (const text of ['This is an invitation (REQUEST)', 'Event 1 has no timezone', 'Event 1 repeats without an end', 'Event 1 contains 2 attendee addresses', 'Event 1 contains 1 alarm', 'Event 1 contains 1 external link', 'Event 3 looks like a duplicate']) await expect(page.getByText(text)).toBeVisible();
   await expect(page.getByRole('button', { name: 'Download checked .ics' })).toBeEnabled();
   await page.goto('/?demo=1');
   await expect(page).toHaveURL(/\/demo$/);
   await expect(page.getByLabel('Demo mode')).toBeVisible();
 });
 
-test('@claim:demo-isolation demo controls never change a saved real file and reset all sample state', async ({ page }) => {
+test('@claim:demo-isolation every demo control and exit keeps a saved real file isolated', async ({ page }) => {
   const original = cleanIcs.replace('clean-1@example.test', 'must-survive@example.test');
-  await seedRealFile(page, 'must-survive.ics', original);
+  const name = 'must-survive.ics';
+  async function seed(): Promise<void> {
+    await seedRealFile(page, name, original);
+    await expect.poll(() => savedRecord(page)).toEqual({ name, source: original });
+  }
+  async function confirmRealFileAndForget(): Promise<void> {
+    await expect(page.getByRole('heading', { name })).toBeVisible();
+    expect(await savedRecord(page)).toEqual({ name, source: original });
+    await page.getByRole('button', { name: 'Forget this file' }).click();
+    await expect(page.getByRole('heading', { name: 'Open a calendar file here' })).toBeVisible();
+    await expect.poll(() => savedRecord(page)).toBeUndefined();
+  }
+
+  await seed();
   await page.goto('/demo');
   await page.getByLabel('Calendar app').selectOption('outlook');
   await page.getByLabel('Remove attendee details').check();
@@ -70,11 +97,30 @@ test('@claim:demo-isolation demo controls never change a saved real file and res
   await expect(page.getByLabel('Remove attendee details')).not.toBeChecked();
   await expect(page.getByText('View raw ICS source')).not.toHaveAttribute('open', '');
   await page.getByRole('button', { name: 'Return to my file' }).click();
-  await expect(page.getByRole('heading', { name: 'must-survive.ics' })).toBeVisible();
-  expect(await savedRecord(page)).toEqual({ name: 'must-survive.ics', source: original });
-  await page.reload();
-  await expect(page.getByRole('heading', { name: 'must-survive.ics' })).toBeVisible();
-  expect(await savedRecord(page)).toEqual({ name: 'must-survive.ics', source: original });
+  await confirmRealFileAndForget();
+
+  await seed();
+  await page.goto('/demo');
+  await page.getByRole('link', { name: 'ICS Intake Checker home' }).click();
+  await confirmRealFileAndForget();
+
+  await seed();
+  await page.getByRole('link', { name: 'Try it with sample data' }).click();
+  await page.goBack();
+  await expect(page).toHaveURL(/\/$/);
+  await confirmRealFileAndForget();
+
+  await seed();
+  await page.goto('/demo');
+  await page.getByRole('link', { name: 'Privacy' }).first().click();
+  await page.getByRole('link', { name: 'ICS Intake Checker home' }).click();
+  await confirmRealFileAndForget();
+
+  await seed();
+  await page.goto('/demo');
+  await page.getByRole('link', { name: 'Terms' }).click();
+  await page.getByRole('link', { name: 'ICS Intake Checker home' }).click();
+  await confirmRealFileAndForget();
 });
 
 test('@claim:local-only event details remain local and embedded links are not opened', async ({ page }) => {
@@ -87,9 +133,11 @@ test('@claim:local-only event details remain local and embedded links are not op
   expect(foreign).toEqual([]);
 });
 
-test('@claim:repair-export selected repairs change only the downloaded copy', async ({ page }) => {
+test('@claim:repair-export selected fixes change only the downloaded copy', async ({ page }) => {
   const original = `BEGIN:VCALENDAR\r\nVERSION:2.0\r\nMETHOD:REQUEST\r\nBEGIN:VEVENT\r\nSUMMARY:Private meeting\r\nDTSTART:20260907T090000\r\nDTEND:20260907T100000\r\nATTENDEE:mailto:person@example.test\r\nORGANIZER:mailto:host@example.test\r\nBEGIN:VALARM\r\nACTION:DISPLAY\r\nTRIGGER:-PT1H\r\nEND:VALARM\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n`;
   await seedRealFile(page, 'private.ics', original);
+  const defaultResult = await downloadedText(page);
+  expect(defaultResult.text).toMatch(/ATTENDEE|ORGANIZER|BEGIN:VALARM|METHOD:REQUEST/);
   for (const label of ['Remove attendee details', 'Remove every alarm', 'Remove invitation mode', 'Add missing event IDs', 'Add creation stamps']) await page.getByLabel(label).check();
   const result = await downloadedText(page);
   expect(result.name).toBe('private-checked-apple.ics');
@@ -121,7 +169,7 @@ test('@claim:risk-detection detects representative malformed calendar-file risks
   const bad = `BEGIN:VCALENDAR\nVERSION:1.0\nMETHOD:CANCEL\nBEGIN:VEVENT\nUID:same\nSUMMARY:Bad range\nDTSTART;TZID=Not/A_Zone:20261340T100000\nDTEND:20260101T090000\nRRULE:INTERVAL=0\nSTATUS:CANCELLED\nATTENDEE:mailto:person@example.test\nORGANIZER:mailto:host@example.test\nURL:https://example.test/hidden\nBEGIN:VALARM\nACTION:DISPLAY\nTRIGGER:-PT1H\nEND:VALARM\nEND:VEVENT\nBEGIN:VEVENT\nUID:same\nSUMMARY:Bad range\nDTSTART:20261340T100000\nDTEND:20260101T090000\nEND:VEVENT\nEND:VCALENDAR`;
   await page.goto('/');
   await page.locator('#ics-file').setInputFiles({ name: 'problem.ics', mimeType: 'text/calendar', buffer: Buffer.from(bad) });
-  for (const text of ['Calendar version 2.0 is missing', 'This file cancels events', 'Event 1 has an invalid start time', 'Event 1 uses an unknown timezone', 'Event 1 has an invalid repeat rule', 'Event 1 is cancelled', 'Event 1 contains 1 attendee address', 'Event 1 will add 1 alarm', 'Event 1 contains 1 external link', 'Event 2 repeats an event ID', 'Event 2 looks like a duplicate']) await expect(page.getByText(text)).toBeVisible();
+  for (const text of ['Calendar version 2.0 is missing', 'This file cancels events', 'Event 1 has an invalid start time', 'Event 1 uses an unknown timezone', 'Event 1 has an invalid repeat rule', 'Event 1 is cancelled', 'Event 1 contains 1 attendee address', 'Event 1 contains 1 alarm', 'Event 1 contains 1 external link', 'Event 2 repeats an event ID', 'Event 2 looks like a duplicate']) await expect(page.getByText(text)).toBeVisible();
   await expect(page.getByRole('button', { name: 'Download checked .ics' })).toBeDisabled();
 });
 
@@ -139,6 +187,7 @@ test('@claim:local-restore restores the latest real file after refresh until the
   await page.reload();
   await expect(page.getByRole('heading', { name: 'clean.ics' })).toBeVisible();
   await page.getByRole('button', { name: 'Forget this file' }).click();
+  await expect(page.getByRole('heading', { name: 'Open a calendar file here' })).toBeVisible();
   await page.reload();
   await expect(page.getByRole('heading', { name: 'Open a calendar file here' })).toBeVisible();
 });
@@ -160,7 +209,7 @@ test('@claim:offline-reload demo reloads without a network after its first visit
 test('@claim:no-third-party-runtime all product routes load without third-party runtime requests', async ({ page }) => {
   const foreign: string[] = [];
   page.on('request', (request) => { if (new URL(request.url()).origin !== 'http://127.0.0.1:4173') foreign.push(request.url()); });
-  for (const path of ['/', '/demo', '/privacy', '/terms']) {
+  for (const path of ['/', '/demo', '/privacy', '/terms', '/definitely-missing-review-path']) {
     await page.goto(path);
     expect(await page.locator('script[src], link[rel="stylesheet"]').evaluateAll((items) => items.every((item) => new URL((item as HTMLScriptElement | HTMLLinkElement).src || (item as HTMLLinkElement).href, location.href).origin === location.origin))).toBe(true);
   }
@@ -199,10 +248,42 @@ test('demo bar stays visible, routes have status semantics, 404 has a shared she
   expect(demo?.status()).toBe(200);
   await page.getByRole('link', { name: 'Privacy' }).first().click();
   await expect(page.locator('h1')).toHaveText('Your event details stay on this device');
+  await expect(page.locator('h1')).toBeFocused();
   await page.goBack();
   await expect(page.locator('h1')).toHaveText('Inspect a sample calendar file');
+  await expect(page.locator('h1')).toBeFocused();
+  await page.goForward();
+  await expect(page.locator('h1')).toHaveText('Your event details stay on this device');
+  await expect(page.locator('h1')).toBeFocused();
   await page.goto('/');
   await page.keyboard.press('Tab');
   await expect(page.getByRole('link', { name: 'Skip to main content' })).toBeFocused();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+});
+
+test('keyboard focus stays with the action after demo reset, reload, forget, and closing paste', async ({ page }) => {
+  await page.goto('/demo');
+  const reset = page.getByRole('button', { name: 'Reset demo' });
+  await reset.focus();
+  await page.keyboard.press('Enter');
+  await expect(page.getByRole('button', { name: 'Reset demo' })).toBeFocused();
+
+  const reload = page.getByRole('button', { name: 'Reload sample file' });
+  await reload.focus();
+  await page.keyboard.press('Enter');
+  await expect(page.getByRole('button', { name: 'Reload sample file' })).toBeFocused();
+
+  await page.goto('/');
+  const paste = page.getByRole('button', { name: 'Paste ICS text' });
+  await paste.focus();
+  await page.keyboard.press('Enter');
+  await expect(page.getByLabel('Paste calendar file text')).toBeFocused();
+  await page.getByRole('button', { name: 'Paste ICS text' }).press('Enter');
+  await expect(page.getByRole('button', { name: 'Paste ICS text' })).toBeFocused();
+
+  await seedRealFile(page, 'focus-real.ics');
+  const forget = page.getByRole('button', { name: 'Forget this file' });
+  await forget.focus();
+  await page.keyboard.press('Enter');
+  await expect(page.getByRole('heading', { name: 'Open a calendar file here' })).toBeFocused();
 });

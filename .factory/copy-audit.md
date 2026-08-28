@@ -1,62 +1,44 @@
-# Copy audit — Polish 2, 2026-08-28
+# Copy audit — Polish 3, 2026-08-28
 
-All visitor-facing landing and README sentences were re-read after the repair. No sentence exceeds 22 words and no banned marketing term appears.
+All visitor-facing landing, demo, workspace, legal, and README copy was re-read after the repair. Every sentence is 22 words or fewer. No banned marketing term appears.
 
-## Landing page
+## First screen
 
-| Copy | Words | Result |
+| Copy | Words | Evidence |
 |---|---:|---|
-| Check a calendar file | 4 | Pass |
-| Check an ICS file before calendar import | 7 | Pass |
-| For people who receive calendar files and want to check risks before importing them. | 14 | Pass |
-| Try it with sample data | 5 | Pass |
-| See timezones, repeats, people, alarms, links, and duplicate risks. | 9 | Pass |
-| Event details stay in this browser. | 6 | Claim: `local-only` |
-| Works offline after the first visit. | 6 | Claim: `offline-reload` |
-| Changes apply only to a downloaded copy. | 7 | Claim: `repair-export` |
-| Inspect the file. | 3 | Pass |
-| Download only a copy you trust. | 6 | Pass |
-| Check your file privately | 5 | Pass |
-| Open a calendar file here | 5 | Pass |
-| Drop an .ics file | 4 | Pass |
-| or choose one from this device | 6 | Pass |
-| Paste ICS text | 3 | Claim: `paste-intake` |
-| The checker reads the file in this browser. | 8 | Claim: `local-only` |
-| It never opens embedded links. | 5 | Claim: `local-only` |
-| Three steps | 2 | Pass |
-| How the checker works | 4 | Pass |
-| What the checker cannot do | 5 | Pass |
-| You choose what happens next | 6 | Pass |
-| The checker prepares a checked copy. | 6 | Claim: `repair-export` |
-| You decide whether to import it. | 6 | Pass |
+| Check a calendar file | 4 | Plain task label |
+| Check an ICS file before calendar import | 7 | One H1 |
+| For people who receive calendar files and want to check risks before importing them. | 14 | Audience and outcome |
+| Try it with sample data | 5 | One-click primary action |
+| See timezones, repeats, people, alarms, links, and duplicate risks. | 9 | `sample-preflight` |
+| Event details stay in this browser. | 6 | `local-only` |
+| Works offline after the first visit. | 6 | `offline-reload` |
+| Changes apply only to a downloaded copy. | 7 | `repair-export` |
 
-## Loaded workspace
+## Demo and loaded file
 
-| Copy | Words | Result |
+| Copy | Words | Evidence |
 |---|---:|---|
-| Inspection complete | 2 | Pass |
-| What to check | 3 | Pass |
-| Event preview | 2 | Pass |
-| Optional cleanup | 2 | Pass |
-| Prepare a safer copy | 5 | Pass |
-| Changes apply only to the downloaded copy. | 7 | Claim: `repair-export` |
-| Your original file stays unchanged. | 5 | Claim: `repair-export` |
-| Adds a generated ID to this downloaded copy. | 8 | Claim: `repair-export` |
-| Adds a UTC creation stamp to this downloaded copy. | 10 | Claim: `repair-export` |
-| Removes alarm blocks from this downloaded copy. | 7 | Claim: `repair-export` |
-| Removes attendee and organizer email addresses. | 6 | Claim: `repair-export` |
-| Removes the METHOD line from this downloaded copy. | 8 | Claim: `repair-export` |
-| Writes standard CRLF line breaks in the downloaded copy. | 10 | Claim: `repair-export` |
-| Choose a calendar app | 5 | Pass |
-| Download a checked copy | 5 | Pass |
-| The download name will end in -checked-apple.ics. | 7 | Claim: `calendar-export` |
-| Ready. Check every warning before import. | 6 | Pass |
+| Demo — sample data, nothing is saved | 6 | `demo-isolation` |
+| The sample shows invitation, timezone, repeat, attendee, alarm, link, and duplicate findings. | 12 | `sample-preflight` |
+| Optional fixes | 2 | Selected term |
+| Choose fixes for a checked copy | 6 | Selected term |
+| Fixes to apply | 3 | Selected term |
+| Add a generated ID to this downloaded copy. | 8 | `repair-export` |
+| Add a UTC creation stamp to this downloaded copy. | 10 | `repair-export` |
+| Remove the alarm block from the downloaded copy if you do not need it. | 13 | `repair-export` |
+| The start time has no TZID or UTC Z suffix. | 11 | Observable ICS detail |
 
-The old opaque fingerprint value is intentionally not shown. No loaded-workspace sentence exceeds 22 words or uses a banned marketing term.
+## README and legal wording
 
-## README
-
-The longest visitor-facing README sentence is 20 words: “Choose fixes for a downloaded copy for Apple Calendar, Google Calendar, or Outlook.” Claims are indexed in `.factory/claims.json`.
+| Copy | Words | Evidence |
+|---|---:|---|
+| Check and fix an ICS file before calendar import. | 9 | Selected term |
+| It shows invitation, timezone, repeat, people, alarm, link, and duplicate findings. | 11 | `sample-preflight` |
+| To open the checked sample in one click, visit `http://localhost:4173/demo`. | 10 | Demo URL |
+| Outside the demo, the browser saves your latest file in the `latest` IndexedDB record. | 13 | `local-restore` |
+| The app loads no analytics, remote fonts, or scripts from other sites. | 12 | `no-third-party-runtime` |
+| The service worker caches the built site so it can reload offline. | 11 | `offline-reload` |
 
 ## Terminology
 
@@ -65,5 +47,6 @@ The longest visitor-facing README sentence is 20 words: “Choose fixes for a do
 | Uploaded document | calendar file, then file |
 | VEVENT record | event |
 | Diagnostic | finding |
+| Optional downloaded-copy change | fix |
 | Downloaded result | checked copy, then copy |
 | Destination | calendar app |
