@@ -151,8 +151,9 @@ test('@claim:demo-isolation every demo control and exit keeps a saved real file 
 
 test('@claim:local-only event details remain local and embedded links are not opened', async ({ page }) => {
   const foreign: string[] = [];
-  page.on('request', (request) => { if (new URL(request.url()).origin !== 'http://127.0.0.1:4173') foreign.push(request.url()); });
   await page.goto('/demo');
+  const appOrigin = new URL(page.url()).origin;
+  page.on('request', (request) => { if (new URL(request.url()).origin !== appOrigin) foreign.push(request.url()); });
   await page.getByText('View raw ICS source').click();
   await expect(page.getByText('https://clinic.example.test/private-visit')).toBeVisible();
   expect(page.url()).toMatch(/\/demo$/);
@@ -266,7 +267,8 @@ test('@claim:offline-reload demo reloads without a network after its first visit
 
 test('@claim:no-third-party-runtime all product routes load without third-party runtime requests', async ({ page }) => {
   const foreign: string[] = [];
-  page.on('request', (request) => { if (new URL(request.url()).origin !== 'http://127.0.0.1:4173') foreign.push(request.url()); });
+  const appOrigin = new URL('/', test.info().project.use.baseURL as string).origin;
+  page.on('request', (request) => { if (new URL(request.url()).origin !== appOrigin) foreign.push(request.url()); });
   for (const path of ['/', '/demo', '/privacy', '/terms', '/definitely-missing-review-path']) {
     await page.goto(path);
     expect(await page.locator('script[src], link[rel="stylesheet"]').evaluateAll((items) => items.every((item) => new URL((item as HTMLScriptElement | HTMLLinkElement).src || (item as HTMLLinkElement).href, location.href).origin === location.origin))).toBe(true);

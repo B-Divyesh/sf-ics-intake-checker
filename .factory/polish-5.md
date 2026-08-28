@@ -1,10 +1,15 @@
 # Polish 5 — cumulative zero-finding closure
 
-**Reviewed candidate:** `e859bd010d4492a98b9629147fe9177a2c653956`  
-**Review commit:** `e28bf1068ec23c3a2ff69682a8eb7ae3dc6d5f83`  
-**Deployed URL:** https://ics-intake-checker.sociobot.in
+**Reviewed candidate:** `e859bd010d4492a98b9629147fe9177a2c653956`
 
-Round 5 retains the product-specific luminous inspection-table design. Evidence references below use the complete desktop/mobile Playwright suite, the named claim test, [local mobile landing](evidence/polish-5-local/screenshot-mobile.png), [local mobile demo](evidence/polish-5-local/demo-mobile.png), and the equivalent post-deploy files under `evidence/polish-5-live/`.
+**Review commit:** `e28bf1068ec23c3a2ff69682a8eb7ae3dc6d5f83`
+
+**Repair commit:** `2fa6f6ad737ba751224aa709d4b08585962bd69e`
+
+**Deployed URL:** https://ics-intake-checker.sociobot.in
+**Deployment:** Static Web Apps deployment `be55b098-6c91-4cc1-858f-79e214de918f`
+
+Round 5 retains the product-specific luminous inspection-table design. Evidence references below use the complete desktop/mobile Playwright suite, the named claim test, [local mobile landing](evidence/polish-5-local/screenshot-mobile.png), [local mobile demo](evidence/polish-5-local/demo-mobile.png), [live landing](evidence/polish-5-live/screenshot-desktop.png), [live mobile demo](evidence/polish-5-live/demo-mobile.png), and [live 404](evidence/polish-5-live/not-found.png).
 
 ## Review 1
 
@@ -90,4 +95,7 @@ The reissued F-1-1 and F-1-5 cases are covered above, including every ordinary d
 - Local full suite: `npm test` passed 32/32 browser checks; `npm run build` produced `dist/`.
 - Local verifier: `evidence/polish-5-local/verify.json` records the correct title, `lang=en`, one H1, main, image alt coverage, named buttons, and no console errors.
 - Build output: JavaScript 31.66 KB raw / 11.19 KB gzip; CSS 15.58 KB raw / 4.46 KB gzip.
-- Clean-clone claim commands, deployment identifier, Lighthouse result, and post-deploy cold checks are recorded in `.factory/handoff.md` after deployment.
+- Clean clone `/tmp/ics-polish5-clean-NdNad6` at `2fa6f6a`: every one of the 12 claim commands passed separately, then `npm test` passed 32/32 and `npm run build` passed.
+- Live verifier: `evidence/polish-5-live/verify.json` records a 961 ms cold load, correct structure, and no console errors. Valid routes returned 200 and the unknown path returned 404.
+- Post-deploy claim checks passed on the custom domain in desktop and mobile, including the new 5,000,000/5,000,001-byte boundary, every demo exit, offline reload, privacy, and Axe scans.
+- Lighthouse 12.8.2 on the identical production build: Performance 100, Accessibility 100, Best Practices 100, SEO 100, LCP 394 ms, CLS 0. See `evidence/polish-5-local/lighthouse.json`.
