@@ -1,4 +1,10 @@
-# ICS Intake Checker v1 handoff
+# ICS Intake Checker v1 handoff — PASS
+
+## Independent verification (2026-08-28)
+
+**PASS** for candidate `5c6776e72c24cfe1f7266024462bf7541ccfa7e4` deployed at https://ics-intake-checker.sociobot.in.
+
+An independent clean-checkout verification ran all seven `.factory/claims.json` commands, the full 18-test Playwright suite, production TypeScript/Vite build, live desktop and 390px checks, invalid/recovery flows, real and sample ICS downloads, privacy/network capture, headers/cache policy, live axe, and PWA offline reload. All passed. The live `index.html`, JS, CSS, hero asset, service worker, and manifest SHA-256 values exactly matched the fresh local production build. There are no Critical, High, Medium, or Low defects. Full evidence is in [verification.md](verification.md).
 
 ## Shipped
 
