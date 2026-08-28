@@ -1,4 +1,4 @@
-const CACHE = 'ics-intake-checker-v1.0.0';
+const CACHE = 'ics-intake-checker-v1.1.0';
 const SHELL = ['/', '/index.html', '/demo', '/privacy', '/terms', '/offline.html', '/manifest.webmanifest', '/favicon.svg', '/assets/inspection-landscape.webp'];
 
 async function cacheFresh(cache, urls) {

@@ -1,43 +1,57 @@
 [
   {
     "id": "sample-preflight",
-    "claim": "The sample shows timezone, repeat, attendee, alarm, and link risks in one click.",
+    "claim": "The sample shows timezone, repeat, attendee, alarm, link, and duplicate risks in one click.",
     "where": "landing action and demo",
     "test": "npm test -- --grep @claim:sample-preflight",
-    "sandbox": "fresh browser context at /; click the sample action and assert populated findings"
+    "sandbox": "fresh browser context at /; click the sample action and assert all six listed finding families"
+  },
+  {
+    "id": "demo-isolation",
+    "claim": "Demo uses sample data and does not change a saved real file.",
+    "where": "demo banner, Privacy, README",
+    "test": "npm test -- --grep @claim:demo-isolation",
+    "sandbox": "seed a real IndexedDB record; exercise reload, reset, and exit in /demo; byte-compare the record after reload"
   },
   {
     "id": "local-only",
     "claim": "Event details stay in this browser, and embedded links are not opened.",
-    "where": "landing facts, intake note, privacy, README",
+    "where": "landing facts, intake note, Privacy, README",
     "test": "npm test -- --grep @claim:local-only",
-    "sandbox": "fresh browser context at /demo; observe every request and require same-origin only"
+    "sandbox": "fresh context at /demo; reveal a sample embedded link while observing all requests and URL state"
   },
   {
     "id": "repair-export",
     "claim": "Selected repairs are applied to a downloaded copy without changing the original.",
-    "where": "repair deck and README",
+    "where": "landing facts, repair deck, boundaries, Terms, README",
     "test": "npm test -- --grep @claim:repair-export",
-    "sandbox": "demo data; remove people, alarms, and invitation mode; inspect downloaded ICS"
+    "sandbox": "save a real fixture; apply every repair; inspect download and byte-compare IndexedDB plus reloaded raw source"
   },
   {
     "id": "risk-detection",
     "claim": "Checks structure, IDs, times, timezones, repeat rules, duplicates, invitation modes, people, alarms, and links.",
     "where": "README and inspection findings",
     "test": "npm test -- --grep @claim:risk-detection",
-    "sandbox": "malformed in-memory fixture plus bundled demo; assert a finding for each risk family"
+    "sandbox": "malformed in-memory fixture; assert a finding for each advertised risk family"
   },
   {
     "id": "calendar-export",
     "claim": "Exports a checked ICS copy for Apple Calendar, Google Calendar, or Outlook.",
     "where": "export deck and README",
     "test": "npm test -- --grep @claim:calendar-export",
-    "sandbox": "clean in-memory ICS fixture; select Outlook; assert filename and METHOD:PUBLISH"
+    "sandbox": "clean in-memory ICS fixture; select each calendar app and assert filename plus destination output"
+  },
+  {
+    "id": "paste-intake",
+    "claim": "Pasted ICS text is checked and saved like a chosen calendar file.",
+    "where": "paste intake and How the checker works",
+    "test": "npm test -- --grep @claim:paste-intake",
+    "sandbox": "fresh context; paste a valid ICS fixture, submit, and assert populated workspace plus IndexedDB record"
   },
   {
     "id": "local-restore",
     "claim": "The latest real file survives refresh until the user forgets it.",
-    "where": "privacy and README",
+    "where": "Privacy and README",
     "test": "npm test -- --grep @claim:local-restore",
     "sandbox": "fresh browser storage; upload clean fixture, refresh, forget, and refresh again"
   },
@@ -47,5 +61,12 @@
     "where": "landing facts and README",
     "test": "npm test -- --grep @claim:offline-reload",
     "sandbox": "fresh browser context at /demo; wait for service worker, disable network, reload"
+  },
+  {
+    "id": "no-third-party-runtime",
+    "claim": "It uses no analytics, advertising, third-party scripts, or remote fonts.",
+    "where": "Privacy and README",
+    "test": "npm test -- --grep @claim:no-third-party-runtime",
+    "sandbox": "fresh context; visit every product route, inspect runtime script/style origins, and require only same-origin requests"
   }
 ]

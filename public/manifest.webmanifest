@@ -2,7 +2,7 @@
   "name": "ICS Intake Checker",
   "short_name": "ICS Checker",
   "description": "Check and repair an ICS file before calendar import.",
-  "start_url": "/?v=1.0",
+  "start_url": "/?v=1.1",
   "scope": "/",
   "display": "standalone",
   "background_color": "#071014",

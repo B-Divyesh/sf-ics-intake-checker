@@ -16,7 +16,7 @@ export default defineConfig({
     { name: 'mobile', use: { ...devices['Desktop Chrome'], viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true } }
   ],
   webServer: {
-    command: 'npm run build && npm run preview',
+    command: 'npm run build && npm run test-server',
     port: 4173,
     reuseExistingServer: true,
     timeout: 60_000
