@@ -7,6 +7,8 @@
 
 The only newly open issue in review 4 was closed by declaring and testing the existing event-preview behavior. All earlier findings were rechecked locally and on the deployed site; none regressed.
 
+Evidence shorthand in the tables: **live landing** means a cold check of `https://ics-intake-checker.sociobot.in/` with [landing screenshot](evidence/polish-4-live/landing-desktop.png); **live demo** means `https://ics-intake-checker.sociobot.in/demo` with [desktop](evidence/polish-4-live/demo-desktop.png) and [390 px](evidence/polish-4-live/demo-mobile.png) screenshots; **live 404** means `https://ics-intake-checker.sociobot.in/definitely-missing-review-path` with the [404 screenshot](evidence/polish-4-live/not-found.png). Each cited live check was run in a new browser context after deployment.
+
 ## Review 1
 
 | Finding | Change made | Evidence |
