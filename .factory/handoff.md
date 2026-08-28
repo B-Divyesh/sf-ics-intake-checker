@@ -1,31 +1,28 @@
-# Polish 1 handoff — complete
+# Review 2 handoff — FAIL
 
-## Repair
+## What was done
 
-- Product repair commit: `57e8d824fc14c2a8ff729b672c2aaec53f496671` (`fix demo isolation and review findings`), pushed to `origin/main`.
-- Resolves every review finding F-1-1 through F-1-29. The complete mapping is in `.factory/polish-1.md`.
-- Demo now has a sticky, explicit disposable-data bar; `?demo=1` canonicalizes to `/demo`; reset is deterministic; Reload sample never touches IndexedDB; Return to my file restores the actual saved record.
-- Added Paste ICS text, exact static route rewrites and a true status-404 path, 44 px mobile targets, copy rewrites, and PWA cache version `v1.1.0`.
+- Conducted the adversarial first-read review against the live deployment at `https://ics-intake-checker.sociobot.in` and current `main` commit `7b3ee4d87d964e04e6ccb260faf8a965470a74f0`.
+- Did not modify product code. Added the review record only: `.factory/review-2.md`.
+- Re-read all prior review/polish/handoff records and verified F-1-1 through F-1-29 in live behavior and current source.
 
-## Verification
+## How to verify
 
-From a clean clone of `57e8d824fc14c2a8ff729b672c2aaec53f496671` at `/tmp/ics-intake-checker-clean-final`:
+From clean clone `/tmp/ics-intake-checker-review-2-clean`:
 
-- `npm ci`: passed, 0 audit vulnerabilities.
-- Every `claims.json` command passed independently: `sample-preflight`, `demo-isolation`, `local-only`, `repair-export`, `risk-detection`, `calendar-export`, `paste-intake`, `local-restore`, `offline-reload`, and `no-third-party-runtime` (two projects each: Chromium desktop and 390 × 844 mobile).
-- `npm run build`: passed; `dist/index.html` exists. Built JS is 11,260 bytes gzip and CSS is 4,460 bytes gzip.
-- `npm test`: passed; all 24 browser tests (12 checks × desktop/mobile). It includes Playwright axe scans of `/`, `/demo`, `/privacy`, and `/terms`, mobile target measurements, keyboard/route focus, status-404 behavior, privacy/network checks, and offline reload.
-- `/opt/fleet/lib/verify-url.sh http://127.0.0.1:4173/demo .factory/evidence/verify-local`: passed. Evidence reports no console errors, one H1, one main landmark, `lang=en`, and zero images missing alt text.
-- Local route check: `/demo` returns 200 and `/definitely-missing-review-path` returns 404 through the same exact-route/static fallback policy intended for deployment.
-- Screenshots: `.factory/evidence/demo-desktop.png`, `.factory/evidence/demo-mobile.png`, `.factory/evidence/verify-local/screenshot-desktop.png`, and `.factory/evidence/verify-local/screenshot-mobile.png`.
+- `npm ci` passed with 0 vulnerabilities.
+- Every command declared in `.factory/claims.json` passed independently.
+- `npm test` passed all 24 desktop/mobile Playwright checks.
+- `npm run build` passed and produced `dist/index.html`.
+- Fresh 390 px and desktop live checks confirmed the first-read answer, one-click populated demo, no console errors, no external runtime requests, no horizontal overflow, and real/demo IndexedDB isolation.
+- Live links were crawled; valid routes and the Param Factory link returned 200, and an unknown product path returned 404.
 
-## Deployment and live re-check
+## Known gaps / next steps
 
-Deployed the static `dist/` artifact to Azure Static Web App `sf-ics-intake-checker` / `sociobot` production. The environment reached **Ready** at `2026-08-28T15:45:41Z`.
+Review verdict is **FAIL**. The product needs the five findings in `.factory/review-2.md` resolved before another acceptance pass:
 
-- Cold live structural verifier: `https://ics-intake-checker.sociobot.in/demo` passed in 1,428 ms with no console errors, title `Demo — ICS Intake Checker`, `lang=en`, one H1, one main, and no images missing alt text. Evidence: `.factory/evidence/verify-live/verify.json` and its paired screenshots.
-- Live route status checks: `/`, `/demo`, `/privacy`, and `/terms` return 200; `/definitely-missing-review-path` returns 404.
-- Cold mobile live check: `/?demo=1` canonicalized to `/demo`, showed the complete demo banner, reset Apple Calendar plus unchecked repairs, kept the banner visible at the document bottom, reloaded sample data, and returned to the empty real-file intake with no page errors.
-- Live screenshots: `.factory/evidence/live-demo-desktop.png` and `.factory/evidence/live-demo-mobile.png`.
-
-Known gaps: none.
+1. Fully test every risk family in the declared `risk-detection` claim.
+2. Claim/test or narrow the detailed repair and calendar-compatibility promises.
+3. Add shared shell and complete metadata to the true 404 document.
+4. Replace the remaining workspace jargon.
+5. Make the root title name the concrete task instead of “safely”.
