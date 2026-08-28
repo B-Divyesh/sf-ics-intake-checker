@@ -1,0 +1,51 @@
+[
+  {
+    "id": "sample-preflight",
+    "claim": "The sample shows timezone, repeat, attendee, alarm, and link risks in one click.",
+    "where": "landing action and demo",
+    "test": "npm test -- --grep @claim:sample-preflight",
+    "sandbox": "fresh browser context at /; click the sample action and assert populated findings"
+  },
+  {
+    "id": "local-only",
+    "claim": "Event details stay in this browser, and embedded links are not opened.",
+    "where": "landing facts, intake note, privacy, README",
+    "test": "npm test -- --grep @claim:local-only",
+    "sandbox": "fresh browser context at /demo; observe every request and require same-origin only"
+  },
+  {
+    "id": "repair-export",
+    "claim": "Selected repairs are applied to a downloaded copy without changing the original.",
+    "where": "repair deck and README",
+    "test": "npm test -- --grep @claim:repair-export",
+    "sandbox": "demo data; remove people, alarms, and invitation mode; inspect downloaded ICS"
+  },
+  {
+    "id": "risk-detection",
+    "claim": "Checks structure, IDs, times, timezones, repeat rules, duplicates, invitation modes, people, alarms, and links.",
+    "where": "README and inspection findings",
+    "test": "npm test -- --grep @claim:risk-detection",
+    "sandbox": "malformed in-memory fixture plus bundled demo; assert a finding for each risk family"
+  },
+  {
+    "id": "calendar-export",
+    "claim": "Exports a checked ICS copy for Apple Calendar, Google Calendar, or Outlook.",
+    "where": "export deck and README",
+    "test": "npm test -- --grep @claim:calendar-export",
+    "sandbox": "clean in-memory ICS fixture; select Outlook; assert filename and METHOD:PUBLISH"
+  },
+  {
+    "id": "local-restore",
+    "claim": "The latest real file survives refresh until the user forgets it.",
+    "where": "privacy and README",
+    "test": "npm test -- --grep @claim:local-restore",
+    "sandbox": "fresh browser storage; upload clean fixture, refresh, forget, and refresh again"
+  },
+  {
+    "id": "offline-reload",
+    "claim": "Works offline after the first visit.",
+    "where": "landing facts and README",
+    "test": "npm test -- --grep @claim:offline-reload",
+    "sandbox": "fresh browser context at /demo; wait for service worker, disable network, reload"
+  }
+]

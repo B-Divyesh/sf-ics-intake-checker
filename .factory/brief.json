@@ -1,0 +1,8 @@
+{
+  "slug": "ics-intake-checker",
+  "title": "ICS Intake Checker",
+  "summary": "Check and repair an ICS file before calendar import",
+  "artifact_class": "pwa-offline",
+  "monetization": "free",
+  "success_measure": "At least 90% of supplied problematic ICS fixtures receive a precise, actionable warning before import."
+}

@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://ics-intake-checker.sociobot.in/sitemap.xml
