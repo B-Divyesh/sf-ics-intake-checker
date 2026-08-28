@@ -1,93 +1,51 @@
-# ICS Intake Checker — review 6 handoff
-
-## Work completed
-
-- Performed the requested adversarial first-read review without changing product code.
-- Added `.factory/review-6.md` with cold-read evidence, full landing/README copy audit, claim results, sandbox/privacy checks, structure/link review, and a per-ID check of every prior finding.
-- Reviewed the live product in fresh 390 × 844 and 1440 × 900 browser contexts.
-- Created clean clone `/tmp/ics-review6-clean-NQ0udl` at `5179345b192daccbc05ed4e46f10d848905b2adf`, ran `npm ci`, all 12 declared claim commands individually against the deployed origin, the complete 32-test deployed suite, and `npm run build`.
-
-## Result
-
-The review verdict is **FAIL**. All runtime/claim checks passed, but three copy/claim findings remain:
-
-- `F-6-1`: unlisted, untestable footer assertion “Original generated illustration.”
-- `F-6-2`: metaphorical 404 H1 “This calendar file took a wrong turn”.
-- `F-6-3`: vague landing H2 “You choose what happens next”.
-
-Only this handoff and `.factory/review-6.md` were changed. The repository remains buildable.
-
-## Verify
-
-```sh
-npm ci
-PLAYWRIGHT_BASE_URL=https://ics-intake-checker.sociobot.in npm test
-npm run build
-```
-
-## Next steps
-
-Remove or make the footer assertion testable, replace the two headings with the concrete rewrites in `review-6.md`, then repeat the full claim and copy audit.
-
----
-
-# Previous polish 5 handoff
+# ICS Intake Checker — polish 6 handoff
 
 ## Completed
 
-- Closed F-5-1 with a declared `intake-size-limit` claim and one tagged browser test.
-- Proved exactly 5,000,000 bytes is accepted and checked, while 5,000,001 bytes is rejected without storage writes, for both file and paste intake.
-- Removed the unreachable parser-level over-limit warning and kept one authoritative UI byte limit.
-- Rechecked every finding from reviews 1–5. Demo isolation, direct `?demo=1`, first-screen copy, metadata, focus, status 404, legal links, mobile layout, and all prior claim coverage remain fixed.
-- Updated the PWA cache/build marker to v1.3, the catalog description, copy audit, cumulative polish record, and claim inventory.
-- Added `PLAYWRIGHT_BASE_URL` support so the same browser suite can verify a deployed origin without starting a local server.
+- Closed F-6-1 by removing the untestable artwork-provenance sentence from every visitor footer. Asset provenance remains documented in `.factory/design.md` and README.
+- Closed F-6-2 with the direct “Page not found” H1 in both the SPA fallback and the real status-404 document.
+- Closed F-6-3 with the landing heading “Import the checked copy yourself.”
+- Rechecked every finding from reviews 1–5. Demo isolation, direct `?demo=1`, reset, claims, real route status, metadata, focus, legal links, mobile targets, privacy, and offline use did not regress.
+- Added a desktop/mobile browser regression for all three round-6 copy fixes and bumped the PWA cache/build marker to v1.4.
+- Updated `.factory/catalog-description.txt` to a 92-character, verb-first sentence and refreshed `.factory/copy-audit.md`.
+- Audited `.factory/claims.json` and `.factory/demo.md`; all 12 claims remain accurate, and the documented direct demo/reset/storage behavior matches production.
 
 ## Source and deployment
 
-- Repair commit: `2fa6f6ad737ba751224aa709d4b08585962bd69e`.
+- Repair commit: `783235bfe1a29ea2fc471f75ca605be2ae049fef`.
 - Pushed branch: `origin/main`.
+- Static Web Apps deployment: `6a542f3f-a291-4ad9-bcd7-236040494c48`.
 - Production URL: https://ics-intake-checker.sociobot.in.
-- Static Web Apps deployment: `be55b098-6c91-4cc1-858f-79e214de918f`.
-- Deployed artifact: the clean-clone `dist/` built from repair commit `2fa6f6a`.
+- Deployed JS, CSS, service worker, and 404 SHA-256 hashes match the local `dist/` files.
 
-## Clean-clone verification
+## Verification
 
-Fresh clone: `/tmp/ics-polish5-clean-NdNad6` at `2fa6f6a`.
-
-- `npm ci`: passed with zero vulnerabilities.
-- Every command in `.factory/claims.json` ran separately and passed in desktop and 390 × 844 Chromium.
-- Passed claim IDs: `sample-preflight`, `event-preview`, `demo-isolation`, `local-only`, `repair-export`, `risk-detection`, `calendar-export`, `paste-intake`, `intake-size-limit`, `local-restore`, `offline-reload`, and `no-third-party-runtime`.
-- `npm test`: 32/32 passed.
+- Clean clone: `/tmp/ics-polish6-clean-cE9MrP/repo` at the repair commit.
+- `npm ci`: passed; zero vulnerabilities.
+- Each of the 12 commands in `.factory/claims.json`: passed separately in desktop and 390 × 844 Chromium.
+- `npm test`: 34/34 passed locally, in the clean clone, during the work-order build, and against production.
 - `npm run build`: passed; `dist/index.html` exists.
-- Build size: JavaScript 31.66 KB raw / 11.19 KB gzip; CSS 15.58 KB raw / 4.46 KB gzip.
+- Bundle: JavaScript 31.58 KB raw / 11.15 KB gzip; CSS 15.51 KB raw / 4.43 KB gzip.
+- Accessibility: all-route Playwright Axe scans found zero serious or critical violations; keyboard, focus, 44 px target, reduced-motion, and mobile-overflow checks passed.
+- Privacy: runtime request capture stayed same-origin; the embedded sample link remained text; demo actions preserved the seeded real IndexedDB record.
+- Offline: the populated demo reloaded after the browser context went offline.
+- Routing: `/`, `/demo`, `/privacy`, and `/terms` returned 200; the tested unknown URL returned 404 with metadata, shell, legal links, and recovery.
+- Cold verifier: 853 ms load, no console errors, correct title/lang/H1/main/alt/button results in `.factory/evidence/polish-6-live/verify.json`.
+- Lighthouse 12.8.2: Performance 100, Accessibility 100, Best Practices 100, SEO 100; LCP 1.1 s, CLS 0, TBT 0 ms.
 
-## Accessibility, privacy, offline, and performance
+## Evidence
 
-- Axe integration found zero serious or critical violations on `/`, `/demo`, `/privacy`, `/terms`, and the status-404 route in desktop and mobile checks.
-- Keyboard checks passed for the skip link, route focus, Back/Forward, demo reset/reload, paste close, and Forget.
-- Mobile checks passed at 390 × 844 with no horizontal overflow and 44 px minimum targets.
-- `@claim:no-third-party-runtime` observed same-origin requests only across all routes and the complete demo flow.
-- `@claim:demo-isolation` byte-compared the saved record after Reset, Reload, Return, wordmark, Back, Privacy, and Terms paths.
-- `@claim:offline-reload` reloaded the populated demo after network access was disabled.
-- Lighthouse 12.8.2 on the identical production build: Performance 100, Accessibility 100, Best Practices 100, SEO 100, LCP 394 ms, CLS 0. Evidence: `.factory/evidence/polish-5-local/lighthouse.json`.
+- Cumulative finding map: `.factory/polish-6.md`.
+- Local: `.factory/evidence/polish-6-local/`.
+- Live: `.factory/evidence/polish-6-live/`.
+- Key live captures: `screenshot-mobile.png`, `demo-mobile.png`, and `not-found.png`.
 
-## Post-deploy cold verification
-
-- `/opt/fleet/lib/verify-url.sh` reported a 961 ms root load, correct title, `lang=en`, one H1, main landmark, complete alt text, named buttons, and no console errors. Evidence: `.factory/evidence/polish-5-live/verify.json`.
-- `/`, `/demo`, `/privacy`, and `/terms` returned 200. `/definitely-missing-polish-5` returned 404 with the shared shell, metadata, legal links, and recovery action.
-- All 12 claim paths passed against the custom domain in desktop and mobile. Remote navigation checks were run serially and the restore/offline claims were also rerun independently.
-- The live 5 MB check accepted and rendered a 5,000,000-byte file and pasted value. It rejected 5,000,001 bytes on both paths and left IndexedDB empty.
-- Direct `/?demo=1` canonicalized to `/demo`, displayed the persistent banner and populated sample, and opened no user-data database.
-- A live seeded file remained byte-identical after every demo exit. Reset restored the Apple destination, unchecked fixes, filename, source, and collapsed disclosure.
-- Screenshots: `.factory/evidence/polish-5-live/screenshot-desktop.png`, `screenshot-mobile.png`, `demo-desktop.png`, `demo-mobile.png`, and `not-found.png`.
-
-## Run and verify
+## Run locally
 
 ```sh
 npm ci
 npm test
 npm run build
-PLAYWRIGHT_BASE_URL=https://ics-intake-checker.sociobot.in npm test
 ```
 
 ## Known gaps
