@@ -1,67 +1,41 @@
-# ICS Intake Checker v1 handoff — PASS
+# Review 1 handoff — FAIL
 
-## Independent verification (2026-08-28)
+## What was done
 
-**PASS** for candidate `5c6776e72c24cfe1f7266024462bf7541ccfa7e4` deployed at https://ics-intake-checker.sociobot.in.
+- Completed an adversarial cold read at 390 × 844 and 1440 × 900 against the live deployment.
+- Audited every landing-page and README sentence, heading, and relevant control in `.factory/review-1.md`.
+- Entered the one-click demo, then tested reset, exit, storage isolation, same-origin behavior, and offline reload.
+- Ran every command in `.factory/claims.json` separately from a fresh clone.
+- Checked prior handoff and verification statements against the live site and source.
+- Crawled routes, links, and metadata assets; checked titles, descriptions, canonicals, headings, landmarks, history, focus, 404 behavior, touch targets, console output, and visual identity.
+- Ran the full Playwright suite, production build, live URL verifier, and live axe scans.
+- Did not modify product code.
 
-An independent clean-checkout verification ran all seven `.factory/claims.json` commands, the full 18-test Playwright suite, production TypeScript/Vite build, live desktop and 390px checks, invalid/recovery flows, real and sample ICS downloads, privacy/network capture, headers/cache policy, live axe, and PWA offline reload. All passed. The live `index.html`, JS, CSS, hero asset, service worker, and manifest SHA-256 values exactly matched the fresh local production build. There are no Critical, High, Medium, or Low defects. Full evidence is in [verification.md](verification.md).
+## Verdict
 
-## Shipped
+**FAIL.** Full findings and fixes are in `.factory/review-1.md`.
 
-- A Vite and TypeScript offline PWA at `/`, with deep-link routes for `/demo`, `/privacy`, `/terms`, and the styled 404.
-- Drag, file-picker, and keyboard intake for ICS files up to 5 MB.
-- Tolerant line unfolding, parameter parsing, escaped text, date and timezone checks, recurrence checks, duplicate UID and content fingerprints, invitation and cancellation warnings, and attendee, alarm, link, and status notices.
-- Event previews that show time type, timezone, location, repeat rule, and a stable content fingerprint.
-- Optional cleanup for missing UIDs, missing DTSTAMP fields, alarms, people, invitation mode, and ICS line endings. Cleanup changes only the downloaded copy.
-- Export routes for Apple Calendar, Google Calendar, and Outlook. Outlook export adds `METHOD:PUBLISH` when no invitation mode exists.
-- IndexedDB restore for the latest real file and an explicit **Forget this file** action.
-- An isolated `/demo` with three bundled events, a persistent banner, reset, real-mode exit, and no storage writes.
-- A hand-written service worker with versioned caches, fresh shell precaching, cache-first assets, network-first pages, an offline fallback, and update notification.
-- Manifest, install icons, social image, canonical and social metadata, sitemap, robots, security headers, privacy, terms, and MIT license.
-- The luminous glass visual system and original generated illustration. Prompt and provenance are in `.factory/design.md` and `assets/src/`.
+The primary blocker is a demo isolation breach: with a real file already saved, choosing **Forget this file** in `/demo` deletes the real IndexedDB record. The demo banner also scrolls out of view, Reset leaves the selected calendar destination changed, and unknown routes return HTTP 200.
 
-## Verify
-
-From a clean checkout:
+## How to verify
 
 ```sh
-npm install
+npm ci
 npm test
 npm run build
 ```
 
-Results on 2026-08-28:
+Observed on 2026-08-28:
 
-- `npm test`: 18 passed across desktop Chromium and a 390 × 844 Chromium mobile context.
-- Claim tests: sample preflight, same-origin privacy, repaired download contents, calendar-specific export, IndexedDB restore/forget, risk detection, and offline reload all passed.
-- Offline claim was also repeated three times in fresh contexts after fixing `Vary`-aware cache matching: 3 passed.
-- `npm run build`: passed; `dist/index.html` exists.
-- Production bundle: 10.95 KB gzip JavaScript and 4.29 KB gzip CSS.
-- Hero WebP: 26.5 KB. Social preview: 106.5 KB.
-- `/opt/fleet/lib/verify-url.sh`: passed with no console errors, one H1, one main landmark, `lang=en`, and no missing image alt text.
-- Playwright axe scan: no serious or critical violations.
-- `npm audit`: 0 vulnerabilities.
+- Each of the seven declared claim commands: PASS, 2 tests per command.
+- Full suite: 18 passed.
+- Build: passed; `dist/` produced.
+- Live verifier: passed its structural checks with no console errors.
+- Live axe: zero violations on five routes.
+- Live offline `/demo` reload: passed.
+- Live unknown URL: incorrectly returned 200.
+- Live seeded-real-data demo isolation: failed; the demo clear action erased the saved real record.
 
-Lighthouse mobile on the production preview:
+## Work left
 
-| Category | Score |
-|---|---:|
-| Performance | 100 |
-| Accessibility | 100 |
-| Best practices | 100 |
-| SEO | 100 |
-
-Measured LCP was 1.5 s, FCP 0.9 s, Speed Index 0.9 s, total blocking time 0 ms, and CLS 0.
-
-## Known gaps
-
-- The checker validates `VEVENT` data. It does not preview `VTODO`, `VJOURNAL`, or free/busy blocks.
-- It recognizes embedded `VTIMEZONE` identifiers but does not calculate custom historical timezone transitions. Event time text preserves the file's wall-clock value and labels its timezone.
-- Calendar apps may interpret vendor extensions differently. The original file remains unchanged so users can compare results.
-- No external problematic fixture pack was supplied. The automated suite covers representative malformed structure, dates, recurrence, duplicate, cancellation, people, alarm, link, privacy, and offline cases.
-
-## Next steps
-
-- Add newly reported vendor fixtures to the risk-detection test before changing parser behavior.
-- Add a repair editor for invalid start/end values after a safe timezone-aware editing design is defined.
-- Validate import output against future major versions of Apple Calendar, Google Calendar, and Outlook as their behavior changes.
+Resolve F-1-1 through F-1-29, then perform another full adversarial review. Do not accept a fresh-context-only demo isolation test; it must seed real data before entering demo and exercise every demo control.
