@@ -1,4 +1,4 @@
-# Polish 1 handoff — pending live propagation
+# Polish 1 handoff — complete
 
 ## Repair
 
@@ -21,4 +21,11 @@ From a clean clone of `57e8d824fc14c2a8ff729b672c2aaec53f496671` at `/tmp/ics-in
 
 ## Deployment and live re-check
 
-The static deployment configuration is `npm ci && npm test && npm run build` with `dist/` as its artifact. The repair was pushed to `main` at 2026-08-28 15:37 UTC. At the time of this note, the live origin still serves the prior bundle (`index-DaI6JhVg.js`) and its old HTTP-200 unknown-route behavior, so this handoff is not yet complete. Await propagation, then cold-check `/`, `/?demo=1`, `/demo`, `/privacy`, `/terms`, and an unknown URL before changing this section to complete.
+Deployed the static `dist/` artifact to Azure Static Web App `sf-ics-intake-checker` / `sociobot` production. The environment reached **Ready** at `2026-08-28T15:45:41Z`.
+
+- Cold live structural verifier: `https://ics-intake-checker.sociobot.in/demo` passed in 1,428 ms with no console errors, title `Demo — ICS Intake Checker`, `lang=en`, one H1, one main, and no images missing alt text. Evidence: `.factory/evidence/verify-live/verify.json` and its paired screenshots.
+- Live route status checks: `/`, `/demo`, `/privacy`, and `/terms` return 200; `/definitely-missing-review-path` returns 404.
+- Cold mobile live check: `/?demo=1` canonicalized to `/demo`, showed the complete demo banner, reset Apple Calendar plus unchecked repairs, kept the banner visible at the document bottom, reloaded sample data, and returned to the empty real-file intake with no page errors.
+- Live screenshots: `.factory/evidence/live-demo-desktop.png` and `.factory/evidence/live-demo-mobile.png`.
+
+Known gaps: none.

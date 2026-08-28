@@ -41,4 +41,4 @@
 - `npm run build`: passes; `dist/index.html` exists.
 - `npm test`: passes across desktop Chromium and 390 × 844 mobile projects.
 - Factory verifier: `.factory/evidence/verify-local/verify.json` has no console errors, one H1, one main, `lang=en`, and zero images missing alt text.
-- Live URL check is recorded in `.factory/handoff.md` after deployment.
+- Live URL re-check: deployed production is ready; `/`, `/demo`, `/privacy`, and `/terms` return 200, while the unknown-route check returns 404. See `.factory/handoff.md` and `.factory/evidence/verify-live/verify.json`.
