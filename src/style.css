@@ -170,8 +170,7 @@ details summary { min-height: 44px; padding-top: 10px; color: var(--cyan); curso
 footer { width: min(1240px, calc(100% - 40px)); margin: 0 auto; display: grid; grid-template-columns: 1fr auto; gap: 16px 48px; padding: 48px 0 56px; border-top: 1px solid var(--line); }
 footer p { margin: 4px 0; font-size: .85rem; }
 footer nav a { display: inline-flex; align-items: center; min-height: 44px; }
-.build-id, .art-credit { font: .7rem var(--mono); }
-.art-credit { text-align: right; }
+.build-id { font: .7rem var(--mono); }
 
 @keyframes pane-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes route-in { from { transform: scaleY(0); } to { transform: scaleY(1); } }
@@ -216,7 +215,6 @@ footer nav a { display: inline-flex; align-items: center; min-height: 44px; }
   .demo-actions button { flex: 1; }
   footer { width: calc(100% - 32px); grid-template-columns: 1fr; }
   footer nav { flex-wrap: wrap; gap: 18px; }
-  .art-credit { text-align: left; }
 }
 
 @media (prefers-reduced-motion: reduce) {

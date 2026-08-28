@@ -38,7 +38,7 @@ function shell(content: string): string {
     <nav aria-label="Main navigation">${navLink('/demo', 'Demo')}${navLink('/privacy', 'Privacy')}</nav>
   </header>
   ${content}
-  <footer><div><strong>ICS Intake Checker</strong><p>Check and fix an ICS file before calendar import.</p></div><nav aria-label="Footer navigation">${navLink('/privacy', 'Privacy')}${navLink('/terms', 'Terms')}<a href="https://hello-factory.sociobot.in" rel="external">Built by Param Factory (external site)</a></nav><p class="build-id">v1.3 · build 2026.08</p><p class="art-credit">Original generated illustration.</p></footer>`;
+  <footer><div><strong>ICS Intake Checker</strong><p>Check and fix an ICS file before calendar import.</p></div><nav aria-label="Footer navigation">${navLink('/privacy', 'Privacy')}${navLink('/terms', 'Terms')}<a href="https://hello-factory.sociobot.in" rel="external">Built by Param Factory (external site)</a></nav><p class="build-id">v1.4 · build 2026.08</p></footer>`;
 }
 
 function pageTitle(name: string, description: string): void {
@@ -124,7 +124,7 @@ function landing(): string {
     </section>
     ${toolMarkup()}
     <section class="how" aria-labelledby="how-title"><div><span class="section-kicker">Three steps</span><h2 id="how-title">How the checker works</h2></div><ol><li><b>1</b><h3>Open the file</h3><p>Drop a calendar file, choose one, or paste its text.</p></li><li><b>2</b><h3>Read each finding</h3><p>Check times, repeats, people, alarms, links, and duplicates.</p></li><li><b>3</b><h3>Export a copy</h3><p>Apply optional fixes and download for your calendar app.</p></li></ol></section>
-    <section class="boundaries" aria-labelledby="boundaries-title"><div><span class="section-kicker">What the checker cannot do</span><h2 id="boundaries-title">You choose what happens next</h2></div><div><p>The checker prepares a checked copy. You decide whether to import it.</p><p>It shows embedded links as text. It does not open them.</p></div></section>
+    <section class="boundaries" aria-labelledby="boundaries-title"><div><span class="section-kicker">What the checker cannot do</span><h2 id="boundaries-title">Import the checked copy yourself</h2></div><div><p>The checker prepares a checked copy. You decide whether to import it.</p><p>It shows embedded links as text. It does not open them.</p></div></section>
   </main>`);
 }
 
@@ -143,7 +143,7 @@ function infoPage(kind: 'privacy' | 'terms'): string {
 
 function notFound(): string {
   pageTitle('Page not found — ICS Intake Checker', 'Return to ICS Intake Checker.');
-  return shell(`<main id="main" class="not-found"><div class="lost-file" aria-hidden="true">404</div><h1 id="page-title" tabindex="-1">This calendar file took a wrong turn</h1><p>The page does not exist. Your open file has not moved.</p><a class="primary-button" href="/" data-route>Return to the checker</a></main>`);
+  return shell(`<main id="main" class="not-found"><div class="lost-file" aria-hidden="true">404</div><h1 id="page-title" tabindex="-1">Page not found</h1><p>The page does not exist. Your open file has not moved.</p><a class="primary-button" href="/" data-route>Return to the checker</a></main>`);
 }
 
 async function db(action: 'get' | 'set' | 'clear', value?: { source: string; name: string }): Promise<{ source: string; name: string } | undefined> {

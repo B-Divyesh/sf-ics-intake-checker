@@ -1,1 +1,1 @@
-Check calendar files for import risks, then download a checked copy for your calendar app.
+Check an ICS file for import risks, choose fixes, and download a copy for your calendar app.

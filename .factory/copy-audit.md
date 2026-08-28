@@ -1,6 +1,6 @@
-# Copy audit — Polish 5, 2026-08-28
+# Copy audit — Polish 6, 2026-08-28
 
-All landing states, demo/workspace copy, legal routes, metadata, and README text were re-read after the repair. Every sentence is 22 words or fewer. No banned marketing term appears. Every claim-like statement maps to `.factory/claims.json`.
+All landing states, demo/workspace copy, legal routes, metadata, 404 copy, and README text were re-read after the repair. Every sentence is 22 words or fewer. No banned marketing term appears. Every retained claim-like statement maps to `.factory/claims.json`.
 
 ## First screen
 
@@ -35,6 +35,16 @@ The headline starts with a verb, uses seven words, and names the job. The audien
 | You decide whether to import it. | 6 | User instruction, not a product outcome claim |
 | It shows embedded links as text. | 6 | `local-only` |
 | It does not open them. | 5 | `local-only` |
+
+## Heading and provenance audit
+
+| Copy | Words | Evidence |
+|---|---:|---|
+| Import the checked copy yourself | 5 | Direct landing section name; `round 6 copy uses direct headings…` |
+| Page not found | 3 | Direct H1 in the SPA and status-404 document; route test |
+| Original generated illustration. | 3 | Removed from every visitor route; provenance remains in `.factory/design.md` and README |
+
+The former vague boundary heading and metaphorical 404 heading are absent from source and built output. Visitor pages make no artwork-provenance claim.
 
 ## Intake errors
 
@@ -74,6 +84,10 @@ The headline starts with a verb, uses seven words, and names the job. The audien
 | Outside the demo, the browser saves your latest file in the latest IndexedDB record. | 14 | `local-restore` |
 | The app loads no analytics, remote fonts, or scripts from other sites. | 12 | `no-third-party-runtime` |
 | The service worker caches the built site so it can reload offline. | 11 | `offline-reload` |
+
+## Catalog description
+
+“Check an ICS file for import risks, choose fixes, and download a copy for your calendar app.” has 17 words and 92 characters. It starts with a verb.
 
 ## Terminology
 

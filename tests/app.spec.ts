@@ -58,6 +58,24 @@ test('landing, metadata, and legal routes have a usable accessible skeleton', as
   }
 });
 
+test('round 6 copy uses direct headings and keeps artwork provenance off visitor pages', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.getByRole('heading', { name: 'Import the checked copy yourself' })).toBeVisible();
+  await expect(page.getByText('Original generated illustration.')).toHaveCount(0);
+
+  await page.evaluate(() => {
+    history.pushState({}, '', '/missing-inside-app');
+    window.dispatchEvent(new PopStateEvent('popstate'));
+  });
+  await expect(page.getByRole('heading', { level: 1, name: 'Page not found' })).toBeFocused();
+  await expect(page.getByText('Original generated illustration.')).toHaveCount(0);
+
+  const response = await page.goto('/definitely-missing-review-6');
+  expect(response?.status()).toBe(404);
+  await expect(page.getByRole('heading', { level: 1, name: 'Page not found' })).toBeVisible();
+  await expect(page.getByText('Original generated illustration.')).toHaveCount(0);
+});
+
 test('claims inventory gives every declared claim exactly one tagged browser test', () => {
   const claims = JSON.parse(readFileSync('.factory/claims.json', 'utf8')) as Array<{ id: string; test: string }>;
   const source = readFileSync('tests/app.spec.ts', 'utf8');
@@ -291,6 +309,7 @@ test('demo bar stays visible, routes have status semantics, 404 has a shared she
   const missing = await page.goto('/definitely-missing-review-path');
   expect(missing?.status()).toBe(404);
   await expect(page).toHaveTitle('Page not found — ICS Intake Checker');
+  await expect(page.getByRole('heading', { level: 1, name: 'Page not found' })).toBeVisible();
   await expect(page.locator('meta[name="description"]')).toHaveAttribute('content', /.+/);
   await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', 'https://ics-intake-checker.sociobot.in/404');
   await expect(page.locator('meta[property="og:title"]')).toHaveAttribute('content', /.+/);
