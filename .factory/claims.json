@@ -56,6 +56,13 @@
     "sandbox": "fresh context; paste a valid ICS fixture, submit, and assert populated workspace plus IndexedDB record"
   },
   {
+    "id": "intake-size-limit",
+    "claim": "Chosen files and pasted ICS text up to 5 MB are checked; larger input is rejected.",
+    "where": "paste intake and file or paste errors",
+    "test": "npm test -- --grep @claim:intake-size-limit",
+    "sandbox": "fresh browser context; assert exactly 5,000,000 bytes reaches the checked event view and 5,000,001 bytes shows the stated rejection and next step for file and paste intake"
+  },
+  {
     "id": "local-restore",
     "claim": "The latest real file survives refresh until the user forgets it.",
     "where": "Privacy and README",

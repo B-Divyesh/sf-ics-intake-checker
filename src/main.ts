@@ -14,6 +14,7 @@ interface AppState {
 }
 
 const initialRepairs: RepairOptions = { uids: false, stamps: false, alarms: false, people: false, method: false, lineEndings: false };
+const MAX_INPUT_BYTES = 5_000_000;
 const state: AppState = { fileName: '', demo: false, destination: 'apple', repairs: { ...initialRepairs }, pasteOpen: false };
 const app = document.querySelector<HTMLDivElement>('#app')!;
 let routeTransition = 0;
@@ -37,7 +38,7 @@ function shell(content: string): string {
     <nav aria-label="Main navigation">${navLink('/demo', 'Demo')}${navLink('/privacy', 'Privacy')}</nav>
   </header>
   ${content}
-  <footer><div><strong>ICS Intake Checker</strong><p>Check and fix an ICS file before calendar import.</p></div><nav aria-label="Footer navigation">${navLink('/privacy', 'Privacy')}${navLink('/terms', 'Terms')}<a href="https://hello-factory.sociobot.in" rel="external">Built by Param Factory (external site)</a></nav><p class="build-id">v1.2 · build 2026.08</p><p class="art-credit">Original generated illustration.</p></footer>`;
+  <footer><div><strong>ICS Intake Checker</strong><p>Check and fix an ICS file before calendar import.</p></div><nav aria-label="Footer navigation">${navLink('/privacy', 'Privacy')}${navLink('/terms', 'Terms')}<a href="https://hello-factory.sociobot.in" rel="external">Built by Param Factory (external site)</a></nav><p class="build-id">v1.3 · build 2026.08</p><p class="art-credit">Original generated illustration.</p></footer>`;
 }
 
 function pageTitle(name: string, description: string): void {
@@ -193,7 +194,7 @@ async function readFile(file?: File): Promise<void> {
   const error = document.querySelector('#file-error');
   if (!file) return;
   if (!file.name.toLowerCase().endsWith('.ics') && file.type !== 'text/calendar') { if (error) error.textContent = 'That file is not an ICS calendar. Choose a file ending in .ics.'; return; }
-  if (file.size > 5_000_000) { if (error) error.textContent = 'That file is larger than 5 MB. Choose a smaller calendar file.'; return; }
+  if (file.size > MAX_INPUT_BYTES) { if (error) error.textContent = 'That file is larger than 5 MB. Choose a smaller calendar file.'; return; }
   try { parseSource(await file.text(), file.name); }
   catch { if (error) error.textContent = 'The file could not be read. Save it again as plain-text ICS, then retry.'; }
 }
@@ -201,7 +202,7 @@ async function readFile(file?: File): Promise<void> {
 function readPastedSource(source: string): void {
   const error = document.querySelector('#file-error');
   if (!source.trim()) { if (error) error.textContent = 'Paste ICS calendar text, then choose Check pasted text.'; return; }
-  if (new Blob([source]).size > 5_000_000) { if (error) error.textContent = 'That text is larger than 5 MB. Paste a smaller calendar file.'; return; }
+  if (new Blob([source]).size > MAX_INPUT_BYTES) { if (error) error.textContent = 'That text is larger than 5 MB. Paste a smaller calendar file.'; return; }
   parseSource(source, 'pasted-calendar.ics');
 }
 

@@ -150,7 +150,6 @@ export function inspectIcs(source: string): Inspection {
   const findings: Finding[] = [];
   const endings = lineEnding(source);
   if (!trimmed) return { source, events: [], findings: [{ id: 'empty', severity: 'error', title: 'The file is empty', detail: 'Choose an ICS file that contains at least one event.' }], calendarName: '', method: '', timezones: [], lineEnding: endings, canExport: false };
-  if (source.length > 5_000_000) findings.push({ id: 'large', severity: 'warning', title: 'This file is unusually large', detail: 'Review the source before importing more than 5 MB of calendar data.' });
   const lines = unfold(trimmed);
   if (lines[0]?.toUpperCase() !== 'BEGIN:VCALENDAR' || !lines.some((line) => line.toUpperCase() === 'END:VCALENDAR')) {
     findings.push({ id: 'wrapper', severity: 'error', title: 'This is not a complete ICS calendar', detail: 'The file needs BEGIN:VCALENDAR and END:VCALENDAR lines.' });

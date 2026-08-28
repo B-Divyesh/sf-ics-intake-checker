@@ -6,6 +6,17 @@ const cleanIcs = `BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Fixture//EN\r\nBEG
 
 const previewIcs = `BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Fixture//EN\r\nBEGIN:VEVENT\r\nUID:school-pickup@example.test\r\nDTSTAMP:20260820T090000Z\r\nSUMMARY:School pickup\r\nDTSTART:20261012T081500Z\r\nDTEND:20261012T084500Z\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nUID:team-lunch@example.test\r\nDTSTAMP:20260820T090000Z\r\nSUMMARY:Team lunch\r\nDTSTART:20261013T121500Z\r\nDTEND:20261013T131500Z\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n`;
 
+function sizedIcs(bytes: number): string {
+  // LF keeps the byte count stable when a textarea normalizes pasted newlines.
+  const beforePadding = 'BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Size boundary fixture//EN\nX-PADDING:';
+  const afterPadding = '\nBEGIN:VEVENT\nUID:size-boundary@example.test\nDTSTAMP:20260820T090000Z\nSUMMARY:Size boundary event\nDTSTART:20260907T090000Z\nDTEND:20260907T100000Z\nEND:VEVENT\nEND:VCALENDAR\n';
+  const paddingBytes = bytes - Buffer.byteLength(beforePadding) - Buffer.byteLength(afterPadding);
+  if (paddingBytes < 0) throw new Error('Requested fixture is too small');
+  const source = `${beforePadding}${'A'.repeat(paddingBytes)}${afterPadding}`;
+  expect(Buffer.byteLength(source)).toBe(bytes);
+  return source;
+}
+
 async function downloadedText(page: Page): Promise<{ name: string; text: string }> {
   const event = page.waitForEvent('download');
   await page.getByRole('button', { name: 'Download checked .ics' }).click();
@@ -195,6 +206,38 @@ test('@claim:paste-intake pasted ICS text uses the same checker and local storag
   await page.getByRole('button', { name: 'Check pasted text' }).click();
   await expect(page.getByRole('heading', { name: 'pasted-calendar.ics' })).toBeVisible();
   expect(await savedRecord(page)).toEqual({ name: 'pasted-calendar.ics', source: cleanIcs });
+});
+
+test('@claim:intake-size-limit accepts 5,000,000 bytes and rejects 5,000,001 bytes for file and paste intake', async ({ page }) => {
+  test.setTimeout(60_000);
+  const atLimit = sizedIcs(5_000_000);
+  const overLimit = `${atLimit}A`;
+
+  await page.goto('/');
+  await page.locator('#ics-file').setInputFiles({ name: 'at-limit.ics', mimeType: 'text/calendar', buffer: Buffer.from(atLimit) });
+  await expect(page.getByRole('heading', { name: 'at-limit.ics' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Size boundary event' })).toBeVisible();
+  await page.getByRole('button', { name: 'Forget this file' }).click();
+
+  await page.locator('#ics-file').setInputFiles({ name: 'over-limit.ics', mimeType: 'text/calendar', buffer: Buffer.from(overLimit) });
+  await expect(page.getByText('That file is larger than 5 MB. Choose a smaller calendar file.')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Open a calendar file here' })).toBeVisible();
+  expect(await savedRecord(page)).toBeUndefined();
+
+  await page.getByRole('button', { name: 'Paste ICS text' }).click();
+  const pastedText = page.getByLabel('Paste calendar file text');
+  await pastedText.evaluate((element, value) => { (element as HTMLTextAreaElement).value = value; }, atLimit);
+  await page.getByRole('button', { name: 'Check pasted text' }).click();
+  await expect(page.getByRole('heading', { name: 'pasted-calendar.ics' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Size boundary event' })).toBeVisible();
+  await page.getByRole('button', { name: 'Forget this file' }).click();
+
+  await page.getByRole('button', { name: 'Paste ICS text' }).click();
+  await page.getByLabel('Paste calendar file text').evaluate((element, value) => { (element as HTMLTextAreaElement).value = value; }, overLimit);
+  await page.getByRole('button', { name: 'Check pasted text' }).click();
+  await expect(page.getByText('That text is larger than 5 MB. Paste a smaller calendar file.')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Open a calendar file here' })).toBeVisible();
+  expect(await savedRecord(page)).toBeUndefined();
 });
 
 test('@claim:local-restore restores the latest real file after refresh until the user forgets it', async ({ page }) => {

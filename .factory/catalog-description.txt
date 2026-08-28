@@ -1,1 +1,1 @@
-Check ICS calendar files for import risks before adding them to your calendar.
+Check calendar files for import risks, then download a checked copy for your calendar app.
