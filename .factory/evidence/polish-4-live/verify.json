@@ -1,0 +1,14 @@
+{
+  "url": "https://ics-intake-checker.sociobot.in",
+  "loadMs": 819,
+  "errors": [],
+  "a11y": {
+    "title": "ICS Intake Checker — Check files before import",
+    "lang": "en",
+    "h1": 1,
+    "main": true,
+    "imgsMissingAlt": 0,
+    "buttonsUnlabeled": 0,
+    "textLength": 1284
+  }
+}
