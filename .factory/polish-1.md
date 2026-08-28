@@ -1,7 +1,7 @@
 # Polish 1 — cumulative finding closure
 
 **Candidate repaired:** `5c6776e72c24cfe1f7266024462bf7541ccfa7e4`  
-**Repair commit:** recorded in the handoff after push  
+**Repair commit:** `57e8d824fc14c2a8ff729b672c2aaec53f496671`  
 **Local evidence:** `npm test`, `npm run build`, `.factory/evidence/demo-desktop.png`, `.factory/evidence/demo-mobile.png`, `.factory/evidence/verify-local/verify.json`
 
 | Finding | Change made | Evidence |
