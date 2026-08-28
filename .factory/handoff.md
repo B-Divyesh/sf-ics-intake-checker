@@ -1,4 +1,37 @@
-# ICS Intake Checker — polish 5 handoff
+# ICS Intake Checker — review 6 handoff
+
+## Work completed
+
+- Performed the requested adversarial first-read review without changing product code.
+- Added `.factory/review-6.md` with cold-read evidence, full landing/README copy audit, claim results, sandbox/privacy checks, structure/link review, and a per-ID check of every prior finding.
+- Reviewed the live product in fresh 390 × 844 and 1440 × 900 browser contexts.
+- Created clean clone `/tmp/ics-review6-clean-NQ0udl` at `5179345b192daccbc05ed4e46f10d848905b2adf`, ran `npm ci`, all 12 declared claim commands individually against the deployed origin, the complete 32-test deployed suite, and `npm run build`.
+
+## Result
+
+The review verdict is **FAIL**. All runtime/claim checks passed, but three copy/claim findings remain:
+
+- `F-6-1`: unlisted, untestable footer assertion “Original generated illustration.”
+- `F-6-2`: metaphorical 404 H1 “This calendar file took a wrong turn”.
+- `F-6-3`: vague landing H2 “You choose what happens next”.
+
+Only this handoff and `.factory/review-6.md` were changed. The repository remains buildable.
+
+## Verify
+
+```sh
+npm ci
+PLAYWRIGHT_BASE_URL=https://ics-intake-checker.sociobot.in npm test
+npm run build
+```
+
+## Next steps
+
+Remove or make the footer assertion testable, replace the two headings with the concrete rewrites in `review-6.md`, then repeat the full claim and copy audit.
+
+---
+
+# Previous polish 5 handoff
 
 ## Completed
 
