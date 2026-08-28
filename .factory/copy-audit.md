@@ -1,4 +1,4 @@
-# Copy audit — Polish 3, 2026-08-28
+# Copy audit — Polish 4, 2026-08-28
 
 All visitor-facing landing, demo, workspace, legal, and README copy was re-read after the repair. Every sentence is 22 words or fewer. No banned marketing term appears.
 
@@ -34,6 +34,7 @@ All visitor-facing landing, demo, workspace, legal, and README copy was re-read 
 | Copy | Words | Evidence |
 |---|---:|---|
 | Check and fix an ICS file before calendar import. | 9 | Selected term |
+| It previews events and explains common import risks. | 8 | `event-preview`, `risk-detection` |
 | It shows invitation, timezone, repeat, people, alarm, link, and duplicate findings. | 11 | `sample-preflight` |
 | To open the checked sample in one click, visit `http://localhost:4173/demo`. | 10 | Demo URL |
 | Outside the demo, the browser saves your latest file in the `latest` IndexedDB record. | 13 | `local-restore` |

@@ -7,6 +7,13 @@
     "sandbox": "fresh browser context at /; click the sample action and assert all seven listed finding families"
   },
   {
+    "id": "event-preview",
+    "claim": "A chosen calendar file shows every event title and start date in Event preview.",
+    "where": "README and page metadata",
+    "test": "npm test -- --grep @claim:event-preview",
+    "sandbox": "fresh browser context; upload a clean two-event ICS fixture and assert each title plus its visible start-date time element in Event preview"
+  },
+  {
     "id": "demo-isolation",
     "claim": "Demo uses sample data and does not change a saved real file.",
     "where": "demo banner, Privacy, README",

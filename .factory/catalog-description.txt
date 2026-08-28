@@ -1,1 +1,1 @@
-Check ICS calendar files for risks before import.
+Check ICS calendar files for import risks before adding them to your calendar.

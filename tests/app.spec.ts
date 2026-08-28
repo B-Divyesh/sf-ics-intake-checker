@@ -4,6 +4,8 @@ import { readFileSync } from 'node:fs';
 
 const cleanIcs = `BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Fixture//EN\r\nBEGIN:VEVENT\r\nUID:clean-1@example.test\r\nDTSTAMP:20260820T090000Z\r\nSUMMARY:Library orientation\r\nDTSTART:20260907T090000Z\r\nDTEND:20260907T100000Z\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n`;
 
+const previewIcs = `BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Fixture//EN\r\nBEGIN:VEVENT\r\nUID:school-pickup@example.test\r\nDTSTAMP:20260820T090000Z\r\nSUMMARY:School pickup\r\nDTSTART:20261012T081500Z\r\nDTEND:20261012T084500Z\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nUID:team-lunch@example.test\r\nDTSTAMP:20260820T090000Z\r\nSUMMARY:Team lunch\r\nDTSTART:20261013T121500Z\r\nDTEND:20261013T131500Z\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n`;
+
 async function downloadedText(page: Page): Promise<{ name: string; text: string }> {
   const event = page.waitForEvent('download');
   await page.getByRole('button', { name: 'Download checked .ics' }).click();
@@ -68,6 +70,19 @@ test('@claim:sample-preflight one click opens three sample events with invitatio
   await page.goto('/?demo=1');
   await expect(page).toHaveURL(/\/demo$/);
   await expect(page.getByLabel('Demo mode')).toBeVisible();
+});
+
+test('@claim:event-preview a chosen calendar file shows every event title and start date in Event preview', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('#ics-file').setInputFiles({ name: 'two-events.ics', mimeType: 'text/calendar', buffer: Buffer.from(previewIcs) });
+  const preview = page.locator('.events-pane');
+  await expect(preview.getByRole('heading', { name: 'Event preview' })).toBeVisible();
+  for (const [title, start] of [['School pickup', '20261012T081500Z'], ['Team lunch', '20261013T121500Z']]) {
+    const card = preview.getByRole('heading', { name: title }).locator('xpath=ancestor::article');
+    await expect(card).toBeVisible();
+    await expect(card.locator('time')).toHaveAttribute('datetime', start);
+    await expect(card.locator('time')).not.toBeEmpty();
+  }
 });
 
 test('@claim:demo-isolation every demo control and exit keeps a saved real file isolated', async ({ page }) => {
