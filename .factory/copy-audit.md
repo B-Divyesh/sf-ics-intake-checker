@@ -1,4 +1,4 @@
-# Copy audit — 2026-08-28
+# Copy audit — Polish 2, 2026-08-28
 
 All visitor-facing landing and README sentences were re-read after the repair. No sentence exceeds 22 words and no banned marketing term appears.
 
@@ -29,6 +29,30 @@ All visitor-facing landing and README sentences were re-read after the repair. N
 | You choose what happens next | 6 | Pass |
 | The checker prepares a checked copy. | 6 | Claim: `repair-export` |
 | You decide whether to import it. | 6 | Pass |
+
+## Loaded workspace
+
+| Copy | Words | Result |
+|---|---:|---|
+| Inspection complete | 2 | Pass |
+| What to check | 3 | Pass |
+| Event preview | 2 | Pass |
+| Optional cleanup | 2 | Pass |
+| Prepare a safer copy | 5 | Pass |
+| Changes apply only to the downloaded copy. | 7 | Claim: `repair-export` |
+| Your original file stays unchanged. | 5 | Claim: `repair-export` |
+| Adds a generated ID to this downloaded copy. | 8 | Claim: `repair-export` |
+| Adds a UTC creation stamp to this downloaded copy. | 10 | Claim: `repair-export` |
+| Removes alarm blocks from this downloaded copy. | 7 | Claim: `repair-export` |
+| Removes attendee and organizer email addresses. | 6 | Claim: `repair-export` |
+| Removes the METHOD line from this downloaded copy. | 8 | Claim: `repair-export` |
+| Writes standard CRLF line breaks in the downloaded copy. | 10 | Claim: `repair-export` |
+| Choose a calendar app | 5 | Pass |
+| Download a checked copy | 5 | Pass |
+| The download name will end in -checked-apple.ics. | 7 | Claim: `calendar-export` |
+| Ready. Check every warning before import. | 6 | Pass |
+
+The old opaque fingerprint value is intentionally not shown. No loaded-workspace sentence exceeds 22 words or uses a banned marketing term.
 
 ## README
 

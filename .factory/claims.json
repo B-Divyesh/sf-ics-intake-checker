@@ -22,10 +22,10 @@
   },
   {
     "id": "repair-export",
-    "claim": "Selected repairs are applied to a downloaded copy without changing the original.",
+    "claim": "Selected fixes change only a downloaded copy: they add missing IDs and UTC stamps, remove people, alarms, and invitation mode, or write CRLF lines.",
     "where": "landing facts, repair deck, boundaries, Terms, README",
     "test": "npm test -- --grep @claim:repair-export",
-    "sandbox": "save a real fixture; apply every repair; inspect download and byte-compare IndexedDB plus reloaded raw source"
+    "sandbox": "save a real fixture; apply every repair; inspect each named output change and CRLF lines; byte-compare IndexedDB plus reloaded raw source"
   },
   {
     "id": "risk-detection",

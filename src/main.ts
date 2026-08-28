@@ -71,12 +71,12 @@ function toolMarkup(): string {
   const count = (severity: Severity) => data.findings.filter((finding) => finding.severity === severity).length;
   const repairKinds = new Set(data.findings.map((finding) => finding.repair).filter(Boolean));
   const repairRows: Array<[keyof RepairOptions, string, string]> = [
-    ['uids', 'Add missing event IDs', 'Prevents repaired events from importing twice.'],
-    ['stamps', 'Add creation stamps', 'Adds the current UTC time to events without a stamp.'],
-    ['alarms', 'Remove every alarm', 'Stops this export from adding notifications.'],
+    ['uids', 'Add missing event IDs', 'Adds a generated ID to this downloaded copy.'],
+    ['stamps', 'Add creation stamps', 'Adds a UTC creation stamp to this downloaded copy.'],
+    ['alarms', 'Remove every alarm', 'Removes alarm blocks from this downloaded copy.'],
     ['people', 'Remove attendee details', 'Removes attendee and organizer email addresses.'],
-    ['method', 'Remove invitation mode', 'Exports event details without a reply request.'],
-    ['lineEndings', 'Normalize file lines', 'Uses the line format expected by calendar apps.']
+    ['method', 'Remove invitation mode', 'Removes the METHOD line from this downloaded copy.'],
+    ['lineEndings', 'Normalize file lines', 'Writes standard CRLF line breaks in the downloaded copy.']
   ];
   return `<section class="workspace" id="checker" aria-labelledby="checker-title">
     <div class="file-ribbon"><div><span class="section-kicker">Inspection complete</span><h2 id="checker-title">${escapeHtml(state.fileName)}</h2></div><button class="quiet-button" type="button" data-action="clear">${state.demo ? 'Reload sample file' : 'Forget this file'}</button></div>
@@ -91,13 +91,13 @@ function toolMarkup(): string {
         ${data.findings.map((finding) => `<article class="finding finding-${finding.severity}"><span class="severity">${severityLabel[finding.severity]}</span><h4>${escapeHtml(finding.title)}</h4><p>${escapeHtml(finding.detail)}</p></article>`).join('')}
       </div></div>
       <div class="events-pane"><h3>Event preview</h3><ol class="event-route">
-        ${data.events.map((event) => `<li><article class="event-card"><div class="event-index" aria-hidden="true">${String(event.index + 1).padStart(2, '0')}</div><div><h4>${escapeHtml(event.summary)}</h4><p class="event-date">${dateMarkup(event)}</p>${event.location ? `<p><span class="data-label">Place</span>${escapeHtml(event.location)}</p>` : ''}${event.recurrence ? `<p><span class="data-label">Repeats</span>${escapeHtml(event.recurrence.replace(/;/g, ' · '))}</p>` : ''}<p><span class="data-label">Fingerprint</span><code>${event.fingerprint}</code></p>${event.description ? `<details><summary>Show description</summary><p>${escapeHtml(event.description)}</p></details>` : ''}</div></article></li>`).join('')}
+        ${data.events.map((event) => `<li><article class="event-card"><div class="event-index" aria-hidden="true">${String(event.index + 1).padStart(2, '0')}</div><div><h4>${escapeHtml(event.summary)}</h4><p class="event-date">${dateMarkup(event)}</p>${event.location ? `<p><span class="data-label">Place</span>${escapeHtml(event.location)}</p>` : ''}${event.recurrence ? `<p><span class="data-label">Repeats</span>${escapeHtml(event.recurrence.replace(/;/g, ' · '))}</p>` : ''}${event.description ? `<details><summary>Show description</summary><p>${escapeHtml(event.description)}</p></details>` : ''}</div></article></li>`).join('')}
       </ol></div>
     </div>
     <section class="repair-deck" aria-labelledby="repair-title"><div><span class="section-kicker">Optional cleanup</span><h3 id="repair-title">Prepare a safer copy</h3><p>Changes apply only to the downloaded copy. Your original file stays unchanged.</p></div>
       <fieldset><legend class="sr-only">Repairs to apply</legend>${repairRows.filter(([key]) => repairKinds.has(key)).map(([key, label, help]) => `<label class="repair-row"><input type="checkbox" data-repair="${key}" ${state.repairs[key] ? 'checked' : ''}/><span><strong>${label}</strong><small>${help}</small></span></label>`).join('') || '<p>No automatic cleanup applies to this file.</p>'}</fieldset>
     </section>
-    <section class="export-deck" aria-labelledby="export-title"><div><span class="section-kicker">Route the copy</span><h3 id="export-title">Export for your calendar</h3></div>
+    <section class="export-deck" aria-labelledby="export-title"><div><span class="section-kicker">Choose a calendar app</span><h3 id="export-title">Download a checked copy</h3></div>
       <label for="destination">Calendar app</label><select id="destination"><option value="apple" ${state.destination === 'apple' ? 'selected' : ''}>Apple Calendar</option><option value="google" ${state.destination === 'google' ? 'selected' : ''}>Google Calendar</option><option value="outlook" ${state.destination === 'outlook' ? 'selected' : ''}>Outlook</option></select>
       <p class="destination-help">${destinationHelp()}</p>
       <button class="primary-button" type="button" data-action="export" ${data.canExport ? '' : 'disabled'}>Download checked .ics</button>
@@ -108,13 +108,13 @@ function toolMarkup(): string {
 }
 
 function destinationHelp(): string {
-  if (state.destination === 'outlook') return 'Adds publishing mode when the file has no invitation mode.';
-  if (state.destination === 'google') return 'Keeps standard timezone and repeat fields for Google Calendar import.';
-  return 'Keeps standard timezone blocks for Apple Calendar import.';
+  if (state.destination === 'outlook') return 'The download name will end in -checked-outlook.ics.';
+  if (state.destination === 'google') return 'The download name will end in -checked-google.ics.';
+  return 'The download name will end in -checked-apple.ics.';
 }
 
 function landing(): string {
-  pageTitle('ICS Intake Checker — Check calendar files safely', 'Preview, check, repair, and export an ICS calendar file before you import it. Your event details stay in your browser.');
+  pageTitle('ICS Intake Checker — Check files before import', 'Preview, check, repair, and export an ICS calendar file before you import it. Your event details stay in your browser.');
   return shell(`<main id="main">
     <section class="hero" aria-labelledby="page-title"><div class="hero-copy"><span class="eyebrow">Check a calendar file</span><h1 id="page-title" tabindex="-1">Check an ICS file before calendar import</h1><p class="lede">For people who receive calendar files and want to check risks before importing them.</p><div class="hero-action"><a class="primary-button" href="/demo" data-route>Try it with sample data</a><span>See timezones, repeats, people, alarms, links, and duplicate risks.</span></div><ul class="plain-facts"><li>Event details stay in this browser.</li><li>Works offline after the first visit.</li><li>Changes apply only to a downloaded copy.</li></ul></div>
       <figure class="hero-art"><picture><source srcset="/assets/inspection-landscape.webp" type="image/webp"/><img src="/assets/inspection-landscape.jpg" width="768" height="512" alt="A glass calendar file passes over a lit inspection table before import." fetchpriority="high" decoding="async"/></picture><figcaption>Inspect the file. Download only a copy you trust.</figcaption></figure>

@@ -33,7 +33,7 @@ async function seedRealFile(page: Page, name = 'private-real.ics', source = clea
 }
 
 test('landing, metadata, and legal routes have a usable accessible skeleton', async ({ page }) => {
-  for (const [path, title] of [['/', 'ICS Intake Checker — Check calendar files safely'], ['/demo', 'Demo — ICS Intake Checker'], ['/privacy', 'Privacy — ICS Intake Checker'], ['/terms', 'Terms — ICS Intake Checker']]) {
+  for (const [path, title] of [['/', 'ICS Intake Checker — Check files before import'], ['/demo', 'Demo — ICS Intake Checker'], ['/privacy', 'Privacy — ICS Intake Checker'], ['/terms', 'Terms — ICS Intake Checker']]) {
     await page.goto(path);
     await expect(page).toHaveTitle(title);
     await expect(page.locator('h1')).toHaveCount(1);
@@ -95,7 +95,8 @@ test('@claim:repair-export selected repairs change only the downloaded copy', as
   expect(result.name).toBe('private-checked-apple.ics');
   expect(result.text).not.toMatch(/ATTENDEE|ORGANIZER|BEGIN:VALARM|METHOD:REQUEST/);
   expect(result.text).toContain('UID:local-');
-  expect(result.text).toContain('DTSTAMP:');
+  expect(result.text).toMatch(/DTSTAMP:\d{8}T\d{6}Z/);
+  expect(result.text).not.toMatch(/(?<!\r)\n/);
   expect(await savedRecord(page)).toEqual({ name: 'private.ics', source: original });
   await page.reload();
   await expect(page.locator('pre')).toContainText(original);
@@ -117,10 +118,10 @@ test('@claim:calendar-export creates an Apple, Google, and Outlook checked copy'
 });
 
 test('@claim:risk-detection detects representative malformed calendar-file risks', async ({ page }) => {
-  const bad = `BEGIN:VCALENDAR\nVERSION:1.0\nMETHOD:CANCEL\nBEGIN:VEVENT\nUID:same\nSUMMARY:Bad range\nDTSTART:20261340T100000\nDTEND:20260101T090000\nRRULE:INTERVAL=0\nSTATUS:CANCELLED\nURL:https://example.test/hidden\nEND:VEVENT\nBEGIN:VEVENT\nUID:same\nSUMMARY:Bad range\nDTSTART:20261340T100000\nDTEND:20260101T090000\nEND:VEVENT\nEND:VCALENDAR`;
+  const bad = `BEGIN:VCALENDAR\nVERSION:1.0\nMETHOD:CANCEL\nBEGIN:VEVENT\nUID:same\nSUMMARY:Bad range\nDTSTART;TZID=Not/A_Zone:20261340T100000\nDTEND:20260101T090000\nRRULE:INTERVAL=0\nSTATUS:CANCELLED\nATTENDEE:mailto:person@example.test\nORGANIZER:mailto:host@example.test\nURL:https://example.test/hidden\nBEGIN:VALARM\nACTION:DISPLAY\nTRIGGER:-PT1H\nEND:VALARM\nEND:VEVENT\nBEGIN:VEVENT\nUID:same\nSUMMARY:Bad range\nDTSTART:20261340T100000\nDTEND:20260101T090000\nEND:VEVENT\nEND:VCALENDAR`;
   await page.goto('/');
   await page.locator('#ics-file').setInputFiles({ name: 'problem.ics', mimeType: 'text/calendar', buffer: Buffer.from(bad) });
-  for (const text of ['Calendar version 2.0 is missing', 'This file cancels events', 'Event 1 has an invalid start time', 'Event 1 has an invalid repeat rule', 'Event 1 is cancelled', 'Event 1 contains 1 external link', 'Event 2 repeats an event ID', 'Event 2 looks like a duplicate']) await expect(page.getByText(text)).toBeVisible();
+  for (const text of ['Calendar version 2.0 is missing', 'This file cancels events', 'Event 1 has an invalid start time', 'Event 1 uses an unknown timezone', 'Event 1 has an invalid repeat rule', 'Event 1 is cancelled', 'Event 1 contains 1 attendee address', 'Event 1 will add 1 alarm', 'Event 1 contains 1 external link', 'Event 2 repeats an event ID', 'Event 2 looks like a duplicate']) await expect(page.getByText(text)).toBeVisible();
   await expect(page.getByRole('button', { name: 'Download checked .ics' })).toBeDisabled();
 });
 
@@ -166,7 +167,7 @@ test('@claim:no-third-party-runtime all product routes load without third-party 
   expect(foreign).toEqual([]);
 });
 
-test('demo bar stays visible, routes have status semantics, and mobile targets fit fingers', async ({ page }) => {
+test('demo bar stays visible, routes have status semantics, 404 has a shared shell, and mobile targets fit fingers', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/demo');
   for (const position of [0, 700, 2200]) {
@@ -180,7 +181,20 @@ test('demo bar stays visible, routes have status semantics, and mobile targets f
   }
   const missing = await page.goto('/definitely-missing-review-path');
   expect(missing?.status()).toBe(404);
+  await expect(page).toHaveTitle('Page not found — ICS Intake Checker');
+  await expect(page.locator('meta[name="description"]')).toHaveAttribute('content', /.+/);
+  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', 'https://ics-intake-checker.sociobot.in/404');
+  await expect(page.locator('meta[property="og:title"]')).toHaveAttribute('content', /.+/);
+  await expect(page.locator('link[rel="icon"]')).toHaveCount(1);
+  await expect(page.getByRole('link', { name: 'Skip to main content' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'ICS Intake Checker home' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Privacy' }).last()).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Terms' })).toBeVisible();
   await expect(page.getByRole('link', { name: 'Return to the checker' })).toBeVisible();
+  await expect(page.locator('h1')).toHaveCount(1);
+  await expect(page.locator('main')).toHaveCount(1);
+  const notFoundAxe = await new AxeBuilder({ page }).analyze();
+  expect(notFoundAxe.violations.filter((item) => ['serious', 'critical'].includes(item.impact || '')).map((item) => item.id)).toEqual([]);
   const demo = await page.goto('/demo');
   expect(demo?.status()).toBe(200);
   await page.getByRole('link', { name: 'Privacy' }).first().click();

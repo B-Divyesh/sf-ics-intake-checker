@@ -1,1 +1,1 @@
-Check and repair ICS calendar files before importing them.
+Check ICS calendar files before you import them.
